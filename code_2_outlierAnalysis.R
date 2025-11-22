@@ -126,61 +126,82 @@ df_year_loo_1 %>%
   mutate(top = row_number() <= k) %>%
   filter(bot | top)
 
-### what happens when removing these outliers
-extreme_countries = c("MNG","KEN")
-extreme_years = c(1998, 2009)
-
-## model: original
-model_og <- 
-  feols(
-    as.formula("growth ~ t + t2 + tx5d + tx5d:t + var + var:seas + p | region + time"),
-    data=dat1
-  )
-summary(model_og)
-
-model_without_outliers <- 
-  feols(
-    as.formula("growth ~ t + t2 + tx5d + tx5d:t + var + var:seas + p | region + time"),
-    data = dat1 %>% filter(
-      # !(time %in% extreme_years)
-      !(country %in% extreme_countries) & !(time %in% extreme_years)
+for (j in 1:3) {
+  if (j==1) {
+    ### only remove 2 countries
+    extreme_countries = c("MNG","KEN")
+    extreme_years = c()
+  } else if (j==2) {
+    ### only remove 2 years
+    extreme_countries = c()
+    extreme_years = c(1998, 2009)
+  } else if (j ==3) {
+    ### remove 2 countries and 2 years
+    extreme_countries = c("MNG","KEN")
+    extreme_years = c(1998, 2009)
+  } else {
+    stop(paste0("j=",j," is not supported."))
+  }
+  
+  ## model: original
+  model_og <- 
+    feols(
+      as.formula("growth ~ t + t2 + tx5d + tx5d:t + var + var:seas + p | region + time"),
+      data=dat1
     )
-  )
-model_without_outliers
-
-get_coeffs_with_MEs <- function(model) {
-  df_coeffs_withoutOutliers = 
-    tibble(coeff=rownames(model$coeftable), model$coeftable) %>%
-    filter(coeff %in% c("t","t2","tx5d","t:tx5d")) %>%
-    select(coeff, Estimate) %>%
-    mutate(
-      ME_tx5d_t5 = Estimate[coeff=="tx5d"] + 5 * Estimate[coeff=="t:tx5d"],
-      ME_tx5d_t25 = Estimate[coeff=="tx5d"] + 25 * Estimate[coeff=="t:tx5d"],
-      ME_tx5d_t5 = ME_tx5d_t5*sd_withinRegionTx5d,
-      ME_tx5d_t25 = ME_tx5d_t25*sd_withinRegionTx5d,
-    ) %>%
-    pivot_wider(names_from = "coeff", values_from = "Estimate") %>%
-    pivot_longer(everything(), names_to ="coeff",values_to = "Estimate") 
-  df_coeffs_withoutOutliers
+  summary(model_og)
+  
+  model_without_outliers <- 
+    feols(
+      as.formula("growth ~ t + t2 + tx5d + tx5d:t + var + var:seas + p | region + time"),
+      data = dat1 %>% filter(
+        # !(time %in% extreme_years)
+        !(country %in% extreme_countries) & !(time %in% extreme_years)
+      )
+    )
+  model_without_outliers
+  
+  get_coeffs_with_MEs <- function(model) {
+    df_coeffs_withoutOutliers = 
+      tibble(coeff=rownames(model$coeftable), model$coeftable) %>%
+      filter(coeff %in% c("t","t2","tx5d","t:tx5d")) %>%
+      select(coeff, Estimate) %>%
+      mutate(
+        ME_tx5d_t5 = Estimate[coeff=="tx5d"] + 5 * Estimate[coeff=="t:tx5d"],
+        ME_tx5d_t25 = Estimate[coeff=="tx5d"] + 25 * Estimate[coeff=="t:tx5d"],
+        ME_tx5d_t5 = ME_tx5d_t5*sd_withinRegionTx5d,
+        ME_tx5d_t25 = ME_tx5d_t25*sd_withinRegionTx5d,
+      ) %>%
+      pivot_wider(names_from = "coeff", values_from = "Estimate") %>%
+      pivot_longer(everything(), names_to ="coeff",values_to = "Estimate") 
+    df_coeffs_withoutOutliers
+  }
+  
+  ME_og = get_coeffs_with_MEs(model_og)
+  ME_withoutOutliers = get_coeffs_with_MEs(model_without_outliers)
+  
+  ME_tx5d_t5_withoutOutliers = ME_withoutOutliers$Estimate[ME_withoutOutliers$coeff=="ME_tx5d_t5"]
+  ME_tx5d_t5_og = ME_og$Estimate[ME_og$coeff=="ME_tx5d_t5"]
+  
+  ME_tx5d_t25_withoutOutliers = ME_withoutOutliers$Estimate[ME_withoutOutliers$coeff=="ME_tx5d_t25"]
+  ME_tx5d_t25_og = ME_og$Estimate[ME_og$coeff=="ME_tx5d_t25"]
+  
+  ### view results
+  print("***********************************************************************")
+  print("extreme_countries:")
+  print(extreme_countries)
+  print("extreme_years:")
+  print(extreme_years)
+  print("ME_og:")
+  print(ME_og)
+  print("ME_withoutOutliers:")
+  print(ME_withoutOutliers)
+  print("scales::percent( (ME_tx5d_t5_withoutOutliers - ME_tx5d_t5_og) / abs(ME_tx5d_t5_og) )")
+  print(scales::percent( (ME_tx5d_t5_withoutOutliers - ME_tx5d_t5_og) / abs(ME_tx5d_t5_og) ))
+  print("scales::percent( (ME_tx5d_t25_withoutOutliers - ME_tx5d_t25_og) / abs(ME_tx5d_t25_og) )")
+  print(scales::percent( (ME_tx5d_t25_withoutOutliers - ME_tx5d_t25_og) / abs(ME_tx5d_t25_og) ))
 }
 
-ME_og = get_coeffs_with_MEs(model_og)
-ME_withoutOutliers = get_coeffs_with_MEs(model_without_outliers)
-
-ME_tx5d_t5_withoutOutliers = ME_withoutOutliers$Estimate[ME_withoutOutliers$coeff=="ME_tx5d_t5"]
-ME_tx5d_t5_og = ME_og$Estimate[ME_og$coeff=="ME_tx5d_t5"]
-
-ME_tx5d_t25_withoutOutliers = ME_withoutOutliers$Estimate[ME_withoutOutliers$coeff=="ME_tx5d_t25"]
-ME_tx5d_t25_og = ME_og$Estimate[ME_og$coeff=="ME_tx5d_t25"]
-
-### view results
-extreme_countries
-extreme_years
-ME_og
-ME_withoutOutliers
-scales::percent( (ME_tx5d_t5_withoutOutliers - ME_tx5d_t5_og) / abs(ME_tx5d_t5_og) )
-scales::percent( (ME_tx5d_t25_withoutOutliers - ME_tx5d_t25_og) / abs(ME_tx5d_t25_og) )
-  
 ################ 
 #### Diagnostics & Outliers
 ################

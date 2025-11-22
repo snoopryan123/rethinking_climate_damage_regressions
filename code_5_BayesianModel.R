@@ -80,7 +80,7 @@ df_plot_ME_posteriorCI =
   ) %>%
   mutate(
     T = factor(str_remove_all(str_remove_all(param, "ME_tx5d_t"),"_ppPerSd"), levels=c("5","25")),
-    method = "Our Bayesian model"
+    method = "Bayesian model"
   )
 df_plot_ME_posteriorCI
 
@@ -92,12 +92,13 @@ plot_bayesianMarginalEffects =
   scale_color_manual(values=c("5"="blue","25"="red")) +
   geom_point(size=3, position=position_dodge(width = 0.1)) + 
   geom_errorbar(aes(ymin = lower, ymax = upper), width = 0.1, position="dodge")  +
+  theme(axis.text.x=element_text(size=20)) +
+# theme(axis.text.x = element_text(angle = 30, hjust = 1)) +
   labs(
     x="",
     title="Posterior mean & 95% credible interval",
     y = "Marginal effect (p.p. per. s.d.)",
     ) 
-  # theme(axis.text.x = element_text(angle = 30, hjust = 1)) +
 ggsave("plots/plot_fullBayesianModelMarginalEffects.png",width=6,height=6)
 
 ### Visualize posterior dist of the autoregressive coefficient
