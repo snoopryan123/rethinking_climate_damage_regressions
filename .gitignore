@@ -1,0 +1,9 @@
+*.csv
+*.rds
+*.DS_Store
+*.log
+*.RData    
+*.Rhistory
+*.json 
+*old*
+*OLD*
