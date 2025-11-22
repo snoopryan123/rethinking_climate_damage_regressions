@@ -9,11 +9,11 @@
 
 ### Code
 
-* `code_1_replicationAndEDA.R`
-* `code_2_outlierAnalysis.R`                           
-* `code_3_permutationTests.R`                          
-* `code_4_outOfSampleCVTests_v0.R`                    
-* `code_5_BayesianModel.R`                             
-* `code_6_BayesianModel_outOfSampleTesting.R`
+* Replication of the primary regression from Callahan & Mankin (2022), and EDA, in `code_1_replicationAndEDA.R`
+* Outlier analysis in `code_2_outlierAnalysis.R`                           
+* Permutation tests in `code_3_permutationTests.R`                          
+* Out-of-sample cross validation tests in `code_4_outOfSampleCVTests_v0.R`                    
+* Bayesian model in `code_5_BayesianModel.R`                             
+* Out-of-sample tests for the Bayesian model in `code_6_BayesianModel_outOfSampleTesting.R`
 
 
