@@ -11,12 +11,12 @@ table(dat1$time)
 table(dat1$time)[MAX_TRAINING_YR_VEC]
 
 ### stan sampling presets
-# NUM_ITERS = 5
-# REFRESH=1
+# NUM_ITERS = 2500
+# REFRESH=100
 # NUM_CHAINS=1
-NUM_ITERS = 2500
+NUM_ITERS = 10000
 REFRESH=100
-NUM_CHAINS=1
+NUM_CHAINS=4
 
 #####################
 ### Validating the Bayesian model via out-of-sample testing

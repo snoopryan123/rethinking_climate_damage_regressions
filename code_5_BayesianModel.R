@@ -2,15 +2,15 @@
 source("code_0_header.R")
 
 ### stan sampling presets
-# NUM_ITERS = 5
-# REFRESH=1
+# NUM_ITERS = 2500
+# REFRESH=100
 # NUM_CHAINS=1
-NUM_ITERS = 2500 #1000
+NUM_ITERS = 10000
 REFRESH=100
-NUM_CHAINS=1
+NUM_CHAINS=4
 
 #####################
-### Fit the Fully Bayesian Model
+### Data for the Fully Bayesian Model
 #####################
 
 ### get data list for stan model
@@ -19,12 +19,29 @@ stan_data = get_data_list_for_stan(
 )
 names(stan_data)
 
-# ### check the data is kosher (expect TRUE)
-# checkme  = function(x) { all(!is.na(x) & is.finite(x)) }
-# suppressWarnings(all(lapply(stan_data, checkme)))
+### check the data is kosher (expect TRUE)
+all_is_not_NA  = function(x) { all(!is.na(x) ) }
+suppressWarnings(all(lapply(stan_data, all_is_not_NA)))
+
+### check the data is kosher (expect TRUE)
+all_is_finite = function(x) {
+  if (is.list(x)) {
+    all(vapply(x, all_is_finite, logical(1)))
+  } else if (is.numeric(x)) {
+    all(is.finite(x))
+  } else {
+    TRUE  # integers, logicals, etc.
+  }
+}
+suppressWarnings(all(lapply(stan_data, all_is_finite)))
 
 ### compile the stan model
 stan_filename = "fullyBayesianModel_A.stan"
+
+#####################
+### Fit the Fully Bayesian Model
+#####################
+
 mod <- cmdstan_model(stan_filename)
 mod
 
@@ -43,7 +60,7 @@ fit <- mod$sample(
 fit
 
 # ### save the model
-# fit$save_object("fullyBayesianModel_A.rds")
+fit$save_object("fullyBayesianModel_A.rds")
 
 #####################
 ### Visualize the results
@@ -57,6 +74,11 @@ fit1
 # # Quick checks 
 # print(fit1$summary(c("beta_0","beta_t","beta_t_sq","beta_tx5d","beta_tx5d_t","sigma",
 #                     "sigma_country","sigma_province","sigma_time","phi")))
+
+s1 = fit1$summary()
+sum(is.na(s1$rhat))
+max(s1$rhat, na.rm=T)
+mean(s1$rhat, na.rm=T)
 
 ### Visualize Marginal Effects
 df_plot_ME_posteriorCI = 

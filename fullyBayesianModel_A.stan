@@ -111,6 +111,7 @@ generated quantities {
   real ME_tx5d_t5;
   real ME_tx5d_t25;
   vector[n_test] climateLinpred_test;
+  real timeComponent_test;
   vector[n_test] pred_test;
   vector[n_test] err_test;
   real rmse_test;
@@ -126,9 +127,14 @@ generated quantities {
                         + beta_tx5d * tx5d_test
                         + beta_tx5d_t * tx5d_t_test
                         + remVarsMat_test * beta_remVars;
+    if (year_idx_test > 1) {
+      timeComponent_test = phi * alpha_time[year_idx_test-1]; // predict from previous year's value
+    } else {
+      timeComponent_test = 0;
+    }
     pred_test = beta_0
             + alpha_province[province_idx_test]
-            + phi * alpha_time[year_idx_test-1] // predict from previous year's value
+            + timeComponent_test
             + useClimateVars * climateLinpred_test;
     err_test = growth_test - pred_test;
     rmse_test = sqrt( mean( err_test .* err_test ) );
