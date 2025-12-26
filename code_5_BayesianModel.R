@@ -2,12 +2,9 @@
 source("code_0_header.R")
 
 ### stan sampling presets
-# NUM_ITERS = 2500
-# REFRESH=100
-# NUM_CHAINS=1
-NUM_ITERS = 10000
 REFRESH=100
-NUM_CHAINS=4
+NUM_ITERS = 10000 #2500 #10000
+NUM_CHAINS=4 #1 #4
 
 #####################
 ### Data for the Fully Bayesian Model
