@@ -1,4 +1,4 @@
-# Rethinking Climate Damage Regressions: A Statistical Response to Callahan and Mankin
+# No Detectable Economic Effect of Extreme Heat After Correcting for Dependence
 
 ## Ryan S. Brill and Abraham J. Wyner
 
