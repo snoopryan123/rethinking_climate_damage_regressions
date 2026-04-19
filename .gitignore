@@ -1,5 +1,4 @@
 *.csv
-*.rds
 *.DS_Store
 *.log
 *.RData    
@@ -7,6 +6,10 @@
 *.json 
 *old*
 *OLD*
+
+
+*.rds
+!fullyBayesianModel_A_spec_*.rds
 
 
 fullyBayesianModel_A
