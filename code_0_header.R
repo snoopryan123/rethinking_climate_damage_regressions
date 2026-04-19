@@ -252,7 +252,8 @@ dat1
 
 ### get data for stan
 get_data_list_for_stan <- function(
-    dat, train_years, test_year=NA, useClimateVars=1, rem_cols=c("var", "var_seas", "p")
+    dat, train_years, test_year=NA, useClimateVars=1, rem_cols=c("var", "var_seas", "p"),
+    useYearEffect=1, useARYearEffect=1, prior_sd_tx5d_coef=10
 ) {
   
   if (is.na(test_year)) {
@@ -343,6 +344,9 @@ get_data_list_for_stan <- function(
     dat_test = dat_test, # just to have
     ###
     useClimateVars      = useClimateVars,
+    useYearEffect       = useYearEffect,
+    useARYearEffect     = useARYearEffect,
+    prior_sd_tx5d_coef  = prior_sd_tx5d_coef,
     n                   = nrow(dat_train),
     num_countries       = num_countries,
     num_provinces       = num_provinces,

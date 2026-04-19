@@ -1,6 +1,9 @@
 data {
   int<lower=0,upper=1> useClimateVars; // 1 = include climate vars, 0 = ignore
-  
+  int<lower=0,upper=1> useYearEffect;     // 0 disables alpha_time entirely
+  int<lower=0,upper=1> useARYearEffect;   // 1=AR(1), 0=iid (only if useYearEffect=1)
+  real<lower=0> prior_sd_tx5d_coef;       // SD for both beta_tx5d, beta_tx5d_t
+
   int<lower=1> n; // number of datapoints
   int<lower=1> num_countries;
   int<lower=1> num_provinces;
@@ -71,10 +74,16 @@ transformed parameters {
     alpha_province[p] = alpha_country[country_of_province[p]] + sigma_province * z_province[p];
   }
       
-  // Temporal    
-  alpha_time[1] = sigma_time * z_time[1];
-  for (yr in 2:num_years) {
-    alpha_time[yr] = phi * alpha_time[yr-1] + sigma_time * z_time[yr];
+  // Temporal
+  if (useYearEffect == 0) {
+    for (yr in 1:num_years) alpha_time[yr] = 0;
+  } else if (useARYearEffect == 1) {
+    alpha_time[1] = sigma_time * z_time[1];
+    for (yr in 2:num_years) {
+      alpha_time[yr] = phi * alpha_time[yr-1] + sigma_time * z_time[yr];
+    }
+  } else {
+    for (yr in 1:num_years) alpha_time[yr] = sigma_time * z_time[yr];
   }
 
   linpred = beta_0
@@ -95,8 +104,8 @@ model {
   beta_0 ~ normal(0, 10);
   beta_t ~ normal(0, 10);
   beta_t_sq ~ normal(0, 10);
-  beta_tx5d ~ normal(0, 10);
-  beta_tx5d_t ~ normal(0, 10);
+  beta_tx5d ~ normal(0, prior_sd_tx5d_coef);
+  beta_tx5d_t ~ normal(0, prior_sd_tx5d_coef);
   beta_remVars ~ normal(0, 10);
 
   // spatial & temporal priors
@@ -127,10 +136,12 @@ generated quantities {
                         + beta_tx5d * tx5d_test
                         + beta_tx5d_t * tx5d_t_test
                         + remVarsMat_test * beta_remVars;
-    if (year_idx_test > 1) {
+    if (useYearEffect == 0) {
+      timeComponent_test = 0;
+    } else if (useARYearEffect == 1 && year_idx_test > 1) {
       timeComponent_test = phi * alpha_time[year_idx_test-1]; // predict from previous year's value
     } else {
-      timeComponent_test = 0;
+      timeComponent_test = 0;  // iid: posterior best guess for unseen year is 0
     }
     pred_test = beta_0
             + alpha_province[province_idx_test]
