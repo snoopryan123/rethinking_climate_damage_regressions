@@ -4,13 +4,14 @@ source("code_0_header.R")
 #####################
 ### Load posterior draws from each sensitivity spec
 #####################
-spec_ids <- c("0_original", "1_noYearEff", "2_indepYearRE", "3_tightPrior")
+
+spec_ids <- c("0_original", "3_tightPrior", "2_indepYearRE", "1_noYearEff")
 
 spec_labels <- c(
-  "0_original"    = "0) Original (AR(1) year, prior SD=10)",
-  "1_noYearEff"   = "1) No year effect",
-  "2_indepYearRE" = "2) Independent year RE (no AR)",
-  "3_tightPrior"  = "3) Tight prior (AR(1), prior SD=1)"
+  "0_original"    = "Original (AR(1) year, prior SD=10)",
+  "3_tightPrior"  = "Tight prior (AR(1), prior SD=1)",
+  "2_indepYearRE" = "Independent year RE (no AR)",
+  "1_noYearEff"   = "No year effect"
 )
 
 df_post <- map_dfr(spec_ids, function(s) {
@@ -19,9 +20,8 @@ df_post <- map_dfr(spec_ids, function(s) {
     warning("missing: ", rds_path, " (run code_5b first); skipping")
     return(NULL)
   }
-  fit <- readRDS(rds_path)
-  posterior::as_draws_df(fit$draws(c("ME_tx5d_t5", "ME_tx5d_t25"))) %>%
-    select(-c(".chain", ".draw", ".iteration")) %>%
+  readRDS(rds_path) %>%    # already a draws_df
+    select(starts_with("ME_")) %>%
     pivot_longer(starts_with("ME_"), names_to = "qoi", values_to = "draw") %>%
     mutate(spec = s, draw = draw * sd_withinRegionTx5d)
 })
@@ -43,6 +43,7 @@ df_summary
 #####################
 ### Comparison plot
 #####################
+
 plot_bayes_sensitivity <-
   ggplot(df_summary, aes(x = mean, y = spec_lab, color = spec)) +
   geom_vline(xintercept = 0, linetype = "dashed", color = "gray60") +
