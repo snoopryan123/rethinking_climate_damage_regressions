@@ -378,13 +378,14 @@ get_data_list_for_stan <- function(
 }
 
 ### fit stan model
-fit_stan_model <- function(stan_data, iter_warmup, iter_sampling, refresh=100, num_chains=1) {
+fit_stan_model <- function(stan_data, iter_warmup, iter_sampling, refresh=100, num_chains=4, thin=10, seed=2025) {
   fit <- mod$sample(
     data = stan_data,
-    seed = 2025,
+    seed = seed,
     chains = num_chains,
     iter_warmup = iter_warmup,
     iter_sampling = iter_sampling,
+    thin = thin,
     refresh = refresh
   )
   fit
