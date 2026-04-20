@@ -19,7 +19,7 @@ THIN = 10
 ### model spec (matches spec "0_original" in code_5b)
 USE_YEAR_EFFECT       = 1L
 USE_AR_YEAR_EFFECT    = 1L
-PRIOR_SD_TX5D_COEF    = 10
+BETA_PRIOR_SD_COEF    = 10
 
 #####################
 ### Validating the Bayesian model via out-of-sample testing
@@ -41,11 +41,11 @@ for (max_training_year_idx in MAX_TRAINING_YR_VEC) {
   ### get data list for stan model
   stan_data_withClimateVars = get_data_list_for_stan(
     dat=dat1, train_years=train_years, test_year=test_year, useClimateVars=1, rem_cols=c("var", "var_seas", "p"),
-    useYearEffect=USE_YEAR_EFFECT, useARYearEffect=USE_AR_YEAR_EFFECT, prior_sd_tx5d_coef=PRIOR_SD_TX5D_COEF
+    useYearEffect=USE_YEAR_EFFECT, useARYearEffect=USE_AR_YEAR_EFFECT, beta_prior_sd_coef=BETA_PRIOR_SD_COEF
   )
   stan_data_withoutClimateVars = get_data_list_for_stan(
     dat=dat1, train_years=train_years, test_year=test_year, useClimateVars=0, rem_cols=c("var", "var_seas", "p"),
-    useYearEffect=USE_YEAR_EFFECT, useARYearEffect=USE_AR_YEAR_EFFECT, prior_sd_tx5d_coef=PRIOR_SD_TX5D_COEF
+    useYearEffect=USE_YEAR_EFFECT, useARYearEffect=USE_AR_YEAR_EFFECT, beta_prior_sd_coef=BETA_PRIOR_SD_COEF
   )
   
   ### overall mean baseline

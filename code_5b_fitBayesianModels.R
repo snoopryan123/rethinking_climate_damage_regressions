@@ -16,7 +16,7 @@ SAVE_VARS  = c("beta_tx5d", "beta_tx5d_t", "phi", "sigma",
 ### Bayesian Model Specifications (Reviewer 2 point 4)
 #####################
 spec_grid <- tribble(
-  ~spec,            ~useYearEffect, ~useARYearEffect, ~prior_sd_tx5d_coef,
+  ~spec,            ~useYearEffect, ~useARYearEffect, ~beta_prior_sd_coef,
   "0_original",     1L,             1L,               10,
   "1_noYearEff",    0L,             0L,               10,
   "2_indepYearRE",  1L,             0L,               10,
@@ -33,14 +33,14 @@ mod
 
 #####################
 ### Fit one spec (passed as command-line argument)
-### Usage:  Rscript code_5b_BayesianSensitivity.R 0_original
-###         Rscript code_5b_BayesianSensitivity.R 1_noYearEff
-###         Rscript code_5b_BayesianSensitivity.R 2_indepYearRE
-###         Rscript code_5b_BayesianSensitivity.R 3_tightPrior
+### Usage:  Rscript code_5b_fitBayesianModels.R 0_original
+###         Rscript code_5b_fitBayesianModels.R 1_noYearEff
+###         Rscript code_5b_fitBayesianModels.R 2_indepYearRE
+###         Rscript code_5b_fitBayesianModels.R 3_tightPrior
 #####################
 args <- commandArgs(trailingOnly = TRUE)
 if (length(args) != 1 || !(args[1] %in% spec_grid$spec)) {
-  stop("Usage: Rscript code_5b_BayesianSensitivity.R <spec>\n",
+  stop("Usage: Rscript code_5b_fitBayesianModels.R <spec>\n",
        "  where <spec> is one of: ", paste(spec_grid$spec, collapse=", "))
 }
 
@@ -60,7 +60,7 @@ stan_data <- get_data_list_for_stan(
   rem_cols = c("var", "var_seas", "p"),
   useYearEffect      = s$useYearEffect,
   useARYearEffect    = s$useARYearEffect,
-  prior_sd_tx5d_coef = s$prior_sd_tx5d_coef
+  beta_prior_sd_coef = s$beta_prior_sd_coef
 )
 
 fit <- fit_stan_model(

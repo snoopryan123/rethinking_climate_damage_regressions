@@ -2,7 +2,7 @@ data {
   int<lower=0,upper=1> useClimateVars; // 1 = include climate vars, 0 = ignore
   int<lower=0,upper=1> useYearEffect;     // 0 disables alpha_time entirely
   int<lower=0,upper=1> useARYearEffect;   // 1=AR(1), 0=iid (only if useYearEffect=1)
-  real<lower=0> prior_sd_tx5d_coef;       // SD for both beta_tx5d, beta_tx5d_t
+  real<lower=0> beta_prior_sd_coef;       // shared prior SD for all beta_* coefficients
 
   int<lower=1> n; // number of datapoints
   int<lower=1> num_countries;
@@ -100,13 +100,13 @@ model {
   sigma_time ~ normal(0, 2);
   sigma ~ normal(0, 2);
   
-  // fixed effects priors
-  beta_0 ~ normal(0, 10);
-  beta_t ~ normal(0, 10);
-  beta_t_sq ~ normal(0, 10);
-  beta_tx5d ~ normal(0, prior_sd_tx5d_coef);
-  beta_tx5d_t ~ normal(0, prior_sd_tx5d_coef);
-  beta_remVars ~ normal(0, 10);
+  // fixed effects priors 
+  beta_0       ~ normal(0, beta_prior_sd_coef);
+  beta_t       ~ normal(0, beta_prior_sd_coef);
+  beta_t_sq    ~ normal(0, beta_prior_sd_coef);
+  beta_tx5d    ~ normal(0, beta_prior_sd_coef);
+  beta_tx5d_t  ~ normal(0, beta_prior_sd_coef);
+  beta_remVars ~ normal(0, beta_prior_sd_coef);
 
   // spatial & temporal priors
   z_country ~ normal(0,1);
