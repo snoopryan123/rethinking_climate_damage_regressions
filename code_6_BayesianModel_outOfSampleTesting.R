@@ -6,14 +6,20 @@ source("code_0_header.R")
 # max_training_year_idx = as.numeric(args[1]) ### sim index
 
 ### look at the years in the dataset
-MAX_TRAINING_YR_VEC = 15:34 # 15:34 # 20:34
+MAX_TRAINING_YR_VEC = 15:34 
 table(dat1$time)
 table(dat1$time)[MAX_TRAINING_YR_VEC]
 
 ### stan sampling presets
 REFRESH=100
-NUM_ITERS = 10000 #2500 #10000
-NUM_CHAINS=4 #1 #4
+NUM_ITERS = 10000
+NUM_CHAINS=4
+THIN = 10  
+
+### model spec (matches spec "0_original" in code_5b)
+USE_YEAR_EFFECT       = 1L
+USE_AR_YEAR_EFFECT    = 1L
+PRIOR_SD_TX5D_COEF    = 10
 
 #####################
 ### Validating the Bayesian model via out-of-sample testing
@@ -34,10 +40,12 @@ for (max_training_year_idx in MAX_TRAINING_YR_VEC) {
   
   ### get data list for stan model
   stan_data_withClimateVars = get_data_list_for_stan(
-    dat=dat1, train_years=train_years, test_year=test_year, useClimateVars=1, rem_cols=c("var", "var_seas", "p")
+    dat=dat1, train_years=train_years, test_year=test_year, useClimateVars=1, rem_cols=c("var", "var_seas", "p"),
+    useYearEffect=USE_YEAR_EFFECT, useARYearEffect=USE_AR_YEAR_EFFECT, prior_sd_tx5d_coef=PRIOR_SD_TX5D_COEF
   )
   stan_data_withoutClimateVars = get_data_list_for_stan(
-    dat=dat1, train_years=train_years, test_year=test_year, useClimateVars=0, rem_cols=c("var", "var_seas", "p")
+    dat=dat1, train_years=train_years, test_year=test_year, useClimateVars=0, rem_cols=c("var", "var_seas", "p"),
+    useYearEffect=USE_YEAR_EFFECT, useARYearEffect=USE_AR_YEAR_EFFECT, prior_sd_tx5d_coef=PRIOR_SD_TX5D_COEF
   )
   
   ### overall mean baseline
@@ -57,12 +65,12 @@ for (max_training_year_idx in MAX_TRAINING_YR_VEC) {
   
   ### sanity check just to make sure the sampling runs
   fit_withClimateVars = fit_stan_model(
-    stan_data_withClimateVars, 
-    iter_warmup=NUM_ITERS, iter_sampling=NUM_ITERS, refresh=REFRESH, num_chains=NUM_CHAINS
+    stan_data_withClimateVars,
+    iter_warmup=NUM_ITERS, iter_sampling=NUM_ITERS, refresh=REFRESH, num_chains=NUM_CHAINS, thin=THIN
   )
   fit_withoutClimateVars = fit_stan_model(
-    stan_data_withoutClimateVars, 
-    iter_warmup=NUM_ITERS, iter_sampling=NUM_ITERS, refresh=REFRESH, num_chains=NUM_CHAINS
+    stan_data_withoutClimateVars,
+    iter_warmup=NUM_ITERS, iter_sampling=NUM_ITERS, refresh=REFRESH, num_chains=NUM_CHAINS, thin=THIN
   )
   
   fit_withClimateVars
