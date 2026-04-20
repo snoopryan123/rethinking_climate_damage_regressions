@@ -14,8 +14,8 @@
 * Permutation tests in `code_3_permutationTests.R`                          
 * Out-of-sample cross validation tests in `code_4_outOfSampleCVTests_v0.R`                    
 * Bayesian model fitting in `code_5b_BayesianSensitivity.R`
-* Bayesian model comparison plot in `code_5c_BayesianSensitivity_compare.R`
-* Bayesian model plots (marginal effects, AR coefficient) for the main Bayesian spec in `code_5d_BayesianModel_plots.R`
+* Bayesian model plots (marginal effects, AR coefficient) for the main Bayesian spec in `code_5c_BayesianModel_plots.R`
+* Bayesian model comparison plot in `code_5d_BayesianSensitivity_compare.R`
 * Out-of-sample tests for the Bayesian model in `code_6_BayesianModel_outOfSampleTesting.R`
 
 
