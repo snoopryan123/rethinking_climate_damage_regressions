@@ -13,7 +13,7 @@ SAVE_VARS  = c("beta_tx5d", "beta_tx5d_t", "phi", "sigma",
                "ME_tx5d_t5", "ME_tx5d_t25")
 
 #####################
-### Sensitivity specs (Reviewer 2 point 4)
+### Bayesian Model Specifications (Reviewer 2 point 4)
 #####################
 spec_grid <- tribble(
   ~spec,            ~useYearEffect, ~useARYearEffect, ~prior_sd_tx5d_coef,

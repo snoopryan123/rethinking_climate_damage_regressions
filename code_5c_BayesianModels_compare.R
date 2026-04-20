@@ -2,13 +2,13 @@
 source("code_0_header.R")
 
 #####################
-### Load posterior draws from each sensitivity spec
+### Load posterior draws from each Bayesian model spec
 #####################
 
 spec_ids <- c("0_original", "3_tightPrior", "2_indepYearRE", "1_noYearEff")
 
 spec_labels <- c(
-  "0_original"    = "Original (AR(1) year, prior SD=10)",
+  "0_original"    = "Original Bayesian Model\n(AR(1) year, prior SD=10)",
   "3_tightPrior"  = "Tight prior (AR(1), prior SD=1)",
   "2_indepYearRE" = "Independent year RE (no AR)",
   "1_noYearEff"   = "No year effect"
@@ -54,10 +54,10 @@ plot_bayes_sensitivity <-
   labs(
     x = "Marginal effect (posterior mean & 95% CrI, p.p. per s.d.)",
     y = NULL,
-    title = "Bayesian sensitivity: year-effect spec & prior",
-    subtitle = "Same data, different model structure / prior."
+    title = "Bayesian Model Sensitivity Analysis: year-effect spec & prior",
+    # subtitle = "Same data, different model structure / prior."
   ) +
   theme(plot.margin = margin(5, 30, 5, 5))
 ggsave("plots/plot_bayes_sensitivity.png", plot_bayes_sensitivity,
-       width = 10, height = 6, dpi = 200)
-plot_bayes_sensitivity
+       width = 11, height = 7, dpi = 200)
+# plot_bayes_sensitivity

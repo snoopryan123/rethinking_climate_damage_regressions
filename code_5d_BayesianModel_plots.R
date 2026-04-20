@@ -44,7 +44,7 @@ plot_bayesianMarginalEffects <-
   scale_color_manual(values = c("5" = "blue", "25" = "red")) +
   geom_point(size = 3, position = position_dodge(width = 0.1)) +
   geom_errorbar(aes(ymin = lower, ymax = upper),
-                width = 0.1, position = "dodge") +
+                width = 0.1, position = "dodge", linewidth = 0.9) +
   theme(axis.text.x = element_text(size = 20)) +
   scale_y_continuous(breaks=seq(-10,10,b=0.1)) +
   labs(
