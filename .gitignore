@@ -7,6 +7,7 @@
 *old*
 *OLD*
 
+CLAUDE.md
 
 *.rds
 !fullyBayesianModel_A_spec_*.rds
