@@ -63,14 +63,13 @@ stan_data <- get_data_list_for_stan(
   prior_sd_tx5d_coef = s$prior_sd_tx5d_coef
 )
 
-fit <- mod$sample(
-  data          = stan_data,
-  seed          = 2025,
-  chains        = NUM_CHAINS,
+fit <- fit_stan_model(
+  stan_data,
   iter_warmup   = NUM_ITERS,
   iter_sampling = NUM_ITERS,
-  thin          = THIN,
-  refresh       = REFRESH
+  refresh       = REFRESH,
+  num_chains    = NUM_CHAINS,
+  thin          = THIN
 )
 
 ### save only the quantities we need (much smaller than save_object)
