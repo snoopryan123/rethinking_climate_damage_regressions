@@ -1,9 +1,7 @@
 
 source("code_0_header.R")
 
-################ 
-#### Replicate their regression
-################
+#### Replicate their regression ####
 
 ## model 1: original
 ### see: Table S1 on page 7 of the Supplementary Materials of the 2022 paper
@@ -15,9 +13,7 @@ mdl_paper <-
 summary(mdl_paper)
 # getfe(mdl_paper)
 
-################ 
-#### In-sample predictiveness (R^2) with versus without the climate variables
-################
+#### In-sample predictiveness (R^2) with versus without the climate variables ####
 
 ### model with climate variables
 lm_withClimateVars <- 
@@ -78,9 +74,7 @@ summary_lm_withClimateVars = summary(lm_withClimateVars)
 summary_lm_withClimateVars$P.r.squared
 summary_lm_withClimateVars$P.adj.r.squared
 
-################ 
-#### Data summary
-################
+#### Data summary ####
 
 ### Initial dataset: panel_in
 panel_in_1
@@ -161,9 +155,7 @@ sum(is.na(dat_og_summary_1))
 dim(dat_og_summary_1)
 
 
-#####################
-### EDA: Growth is correlated within each country and across time
-#####################
+#### EDA: Growth is correlated within each country and across time ####
 
 ### plot growth over time by region within each country 
 # View(dat %>% distinct(iso, region) %>% count(iso) %>% arrange(n))
@@ -184,6 +176,109 @@ plot_regionCorr = wrap_plots(plot_regionCorr, ncol = 4) +
   plot_annotation(title = "Growth Over Time by Region within each Country")
 # plot_regionCorr
 ggsave("plots/plot_EDA_regionCountryCorr.png", width=12, height=5)
+
+### plot T over time by region within each country
+plot_regionCorr_t <-
+  dat %>%
+  filter(iso %in% c(
+    "AUS", "CAN", "KOR", "FRA", "ARG", "CHE", "PAK", "BRA"
+  )) %>%
+  split(.$iso) %>%
+  lapply(function(df) {
+    ggplot(df, aes(x = time, y = t, color = region)) +
+      geom_line() +
+      theme_minimal() +
+      labs(title = unique(df$iso), x = "Time", y = "T", color = "Region") +
+      scale_color_discrete(guide="none")
+  })
+plot_regionCorr_t = wrap_plots(plot_regionCorr_t, ncol = 4) +
+  plot_annotation(title = "T Over Time by Region within each Country")
+ggsave("plots/plot_EDA_regionCountryCorr_t.png", width=12, height=5)
+
+### plot Tx5d over time by region within each country
+plot_regionCorr_tx5d <-
+  dat %>%
+  filter(iso %in% c(
+    "AUS", "CAN", "KOR", "FRA", "ARG", "CHE", "PAK", "BRA"
+  )) %>%
+  split(.$iso) %>%
+  lapply(function(df) {
+    ggplot(df, aes(x = time, y = tx5d, color = region)) +
+      geom_line() +
+      theme_minimal() +
+      labs(title = unique(df$iso), x = "Time", y = "Tx5d", color = "Region") +
+      scale_color_discrete(guide="none")
+  })
+plot_regionCorr_tx5d = wrap_plots(plot_regionCorr_tx5d, ncol = 4) +
+  plot_annotation(title = "Tx5d Over Time by Region within each Country")
+ggsave("plots/plot_EDA_regionCountryCorr_tx5d.png", width=12, height=5)
+
+### plot growth / t / tx5d over time by region within each group of NEIGHBORING countries
+neighbor_groups <- tribble(
+  ~group,             ~iso,
+  "North America",    "USA",
+  "North America",    "CAN",
+  "North America",    "MEX",
+  "Western Europe",   "FRA",
+  "Western Europe",   "DEU",
+  "Western Europe",   "ESP",
+  "Western Europe",   "ITA",
+  "Western Europe",   "GBR",
+  "Central Europe",   "CHE",
+  "Central Europe",   "AUT",
+  "Central Europe",   "POL",
+  "Central Europe",   "CZE",
+  "East Asia",        "CHN",
+  "East Asia",        "JPN",
+  "East Asia",        "KOR",
+  "South Asia",       "IND",
+  "South Asia",       "PAK",
+  "South Asia",       "BGD",
+  "Southern Cone",    "ARG",
+  "Southern Cone",    "BRA",
+  "Southern Cone",    "CHL",
+  "Southern Cone",    "URY",
+  "Oceania",          "AUS",
+  "Oceania",          "NZL",
+  "Nordics",          "SWE",
+  "Nordics",          "NOR",
+  "Nordics",          "FIN",
+  "Nordics",          "DNK"
+) %>%
+  filter(iso %in% unique(dat$iso))
+
+plot_neighbor_corr <- function(varname, ylab, title) {
+  dat_grp <- dat %>% inner_join(neighbor_groups, by = "iso")
+  plots <-
+    dat_grp %>%
+    split(.$group) %>%
+    lapply(function(df) {
+      ggplot(df, aes(x = time, y = .data[[varname]],
+                     color = iso, group = interaction(iso, region))) +
+        geom_line(alpha = 0.7) +
+        theme_minimal() +
+        labs(title = unique(df$group), x = "Time", y = ylab, color = "Country")
+    })
+  wrap_plots(plots, ncol = 4) + plot_annotation(title = title)
+}
+
+p_growth_neighbors = plot_neighbor_corr(
+  "growth", "Growth",
+  "Growth Over Time by Region within each Group of Neighboring Countries"
+)
+ggsave("plots/plot_EDA_regionNeighborCorr_growth.png", p_growth_neighbors, width=14, height=6)
+
+p_t_neighbors = plot_neighbor_corr(
+  "t", "Mean annual T (C)",
+  "Temperature Over Time by Region within each Group of Neighboring Countries"
+)
+ggsave("plots/plot_EDA_regionNeighborCorr_t.png", p_t_neighbors, width=14, height=6)
+
+p_tx5d_neighbors = plot_neighbor_corr(
+  "tx5d", "tx5d",
+  "Extreme Heat (tx5d) Over Time by Region within each Group of Neighboring Countries"
+)
+ggsave("plots/plot_EDA_regionNeighborCorr_tx5d.png", p_tx5d_neighbors, width=14, height=6)
 
 # ### plot growth over time by country within each subcontinent 
 # plot_subcontinentCorr0 <- 
@@ -310,6 +405,6 @@ plot_timeCorLag =
 ggsave("plots/plot_EDA_timeCorLagDensity.png", 
        wrap_plots(plot_timeCorLag), width=6, height=4)
 
-##################
+#### SANDBOX ####
 
 
