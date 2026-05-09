@@ -248,14 +248,16 @@ neighbor_groups <- tribble(
   filter(iso %in% unique(dat$iso))
 
 plot_neighbor_corr <- function(varname, ylab, title) {
-  dat_grp <- dat %>% inner_join(neighbor_groups, by = "iso")
+  dat_grp <- dat %>%
+    inner_join(neighbor_groups, by = "iso") %>%
+    group_by(iso, group, time) %>%
+    summarise(!!varname := mean(.data[[varname]], na.rm = TRUE), .groups = "drop")
   plots <-
     dat_grp %>%
     split(.$group) %>%
     lapply(function(df) {
-      ggplot(df, aes(x = time, y = .data[[varname]],
-                     color = iso, group = interaction(iso, region))) +
-        geom_line(alpha = 0.7) +
+      ggplot(df, aes(x = time, y = .data[[varname]], color = iso)) +
+        geom_line() +
         theme_minimal() +
         labs(title = unique(df$group), x = "Time", y = ylab, color = "Country")
     })
