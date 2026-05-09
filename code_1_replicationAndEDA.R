@@ -155,7 +155,7 @@ sum(is.na(dat_og_summary_1))
 dim(dat_og_summary_1)
 
 
-#### EDA: Growth is correlated within each country and across time ####
+#### EDA: Growth, t, tx5d are correlated within each country and across time ####
 
 ### plot growth over time by region within each country 
 # View(dat %>% distinct(iso, region) %>% count(iso) %>% arrange(n))
@@ -213,7 +213,7 @@ plot_regionCorr_tx5d = wrap_plots(plot_regionCorr_tx5d, ncol = 4) +
   plot_annotation(title = "Tx5d Over Time by Region within each Country")
 ggsave("plots/plot_EDA_regionCountryCorr_tx5d.png", width=12, height=5)
 
-### plot growth / t / tx5d over time by region within each group of NEIGHBORING countries
+#### EDA: Neighboring countries correlation ####
 neighbor_groups <- tribble(
   ~group,             ~iso,
   "North America",    "USA",
@@ -327,38 +327,79 @@ ggsave("plots/plot_EDA_regionNeighborCorr_tx5d.png", p_tx5d_neighbors, width=14,
 # # plot_continentCorr
 # ggsave("plots/plot_EDA_subcontinentContinentCorr.png", width=11, height=5)
 
-### plot lag-1 growth correlation by region
-plot_timeCorrLag1 = 
-  dat %>%
-  filter(iso %in% c(
-    "DNK", "GRC", "AZE" #"DEU"
-  )) %>%
-  arrange(region, time) %>%
-  group_by(region) %>%
-  mutate(growth_lag1 = lag(growth)) %>%
-  ungroup() %>%
-  ggplot(aes(x = growth_lag1, y = growth)) +
-  geom_abline(intercept=0, slope=0, color="gray60", linetype="dashed") +
-  geom_abline(intercept=0, slope=1, color="gray60", linetype="dashed") +
-  geom_point(alpha = 0.5) +
-  geom_smooth(aes(color = iso), method = "lm", se = FALSE) +
-  stat_correlation(aes(color = iso), method = "pearson", label.x = "left", label.y = "top") +
-  facet_wrap(~ region, scales="free") +
-  theme_minimal() +
-  labs(
-    x = "Growth (Previous Year)",
-    y = "Growth (Current Year)",
-    title = "Lag-1 Growth Correlation by Region",
-    color = "Country"
-  ) 
-# plot_timeCorrLag1
-ggsave("plots/plot_EDA_timeCorrLag1.png", wrap_plots(plot_timeCorrLag1), 
-       width=9, height=7)
+#### EDA: Lag-1 Growth Correlation by Region ####
 
-### plot density of Lag-k Growth Correlation Across Regions
+plot_lag1 <- function(varname, ylab) {
+  dat %>%
+    filter(iso %in% c("DNK", "GRC", "AZE")) %>%
+    arrange(region, time) %>%
+    group_by(region) %>%
+    mutate(var_lag1 = lag(.data[[varname]])) %>%
+    ungroup() %>%
+    ggplot(aes(x = var_lag1, y = .data[[varname]])) +
+    geom_abline(intercept=0, slope=0, color="gray60", linetype="dashed") +
+    geom_abline(intercept=0, slope=1, color="gray60", linetype="dashed") +
+    geom_point(alpha = 0.5) +
+    geom_smooth(aes(color = iso), method = "lm", se = FALSE) +
+    stat_correlation(aes(color = iso), method = "pearson", label.x = "left", label.y = "top") +
+    facet_wrap(~ region, scales="free") +
+    theme_minimal() +
+    labs(
+      x = paste0(ylab, " (Previous Year)"),
+      y = paste0(ylab, " (Current Year)"),
+      title = paste0("Lag-1 ", ylab, " Correlation by Region"),
+      color = "Country"
+    )
+}
+
+plot_timeCorrLag1 = plot_lag1("growth", "Growth")
+ggsave("plots/plot_EDA_timeCorrLag1.png", wrap_plots(plot_timeCorrLag1), width=9, height=7)
+
+plot_timeCorrLag1_t = plot_lag1("t", "T")
+ggsave("plots/plot_EDA_timeCorrLag1_t.png", wrap_plots(plot_timeCorrLag1_t), width=9, height=7)
+
+plot_timeCorrLag1_tx5d = plot_lag1("tx5d", "Tx5d")
+ggsave("plots/plot_EDA_timeCorrLag1_tx5d.png", wrap_plots(plot_timeCorrLag1_tx5d), width=9, height=7)
+
+#### EDA: AR(1) Correlation Ridgeline by Country ####
+
+plot_ar1_ridge <- function(varname, ylab) {
+  dat %>%
+    arrange(region, time) %>%
+    group_by(region) %>%
+    mutate(var_lag1 = lag(.data[[varname]])) %>%
+    drop_na(var_lag1) %>%
+    group_by(iso, region) %>%
+    reframe(ar1 = cor(.data[[varname]], var_lag1)) %>%
+    mutate(iso = fct_reorder(iso, ar1, .fun = median)) %>%
+    ggplot(aes(x = ar1, y = iso, fill = iso)) +
+    geom_density_ridges(alpha = 0.5, scale = 1.2) +
+    geom_vline(xintercept = 0, linetype = "dashed", color = "gray40") +
+    theme_minimal() +
+    theme(panel.background = element_rect(fill = "white", color = NA),
+          plot.background = element_rect(fill = "white", color = NA)) +
+    guides(fill = "none") +
+    labs(
+      x = "AR(1) Correlation",
+      y = "Country",
+      title = paste0("AR(1) ", ylab, " Correlation across Regions by Country")
+    )
+}
+
+plot_ar1_ridge_growth = plot_ar1_ridge("growth", "Growth")
+ggsave("plots/plot_EDA_ar1Ridge_growth.png", plot_ar1_ridge_growth, width=8, height=10)
+
+plot_ar1_ridge_t = plot_ar1_ridge("t", "T")
+ggsave("plots/plot_EDA_ar1Ridge_t.png", plot_ar1_ridge_t, width=8, height=10)
+
+plot_ar1_ridge_tx5d = plot_ar1_ridge("tx5d", "Tx5d")
+ggsave("plots/plot_EDA_ar1Ridge_tx5d.png", plot_ar1_ridge_tx5d, width=8, height=10)
+
+#### EDA: Lag-k Growth Correlation Density ####
+
 df_corLag = tibble()
 for (i in 1:5) {
-  df_corLag_i = 
+  df_corLag_i =
     dat %>%
     select(iso, region, time, growth) %>%
     arrange(region, time) %>%
@@ -373,22 +414,22 @@ for (i in 1:5) {
   df_corLag_i$lag = i
   df_corLag = bind_rows(df_corLag, df_corLag_i)
 }
-df_corLag = 
+df_corLag =
   df_corLag %>%
   group_by(iso,lag) %>%
   mutate(med_cor = median(cor_growth_lag)) %>%
   ungroup()
 df_corLag
 
-plot_timeCorLag = 
+plot_timeCorLag =
   df_corLag %>%
   filter(lag <= 3) %>%
   group_by(lag) %>%
   mutate(med_cor_by_lag = median(cor_growth_lag, na.rm=T)) %>%
   ungroup() %>%
   ggplot(aes(
-    x = cor_growth_lag, 
-    fill = factor(lag), 
+    x = cor_growth_lag,
+    fill = factor(lag),
     color = factor(lag),
   )) +
   scale_color_brewer(palette = "Set1") +
@@ -401,10 +442,10 @@ plot_timeCorLag =
     title = "Density of Lag-k Growth Correlation across Regions"
   ) +
   theme_minimal() +
-  geom_vline(linewidth=1, aes(color = factor(lag),xintercept = med_cor_by_lag)) + 
-  geom_vline(xintercept = 0, linetype="dashed", linewidth=1, color="gray40") 
+  geom_vline(linewidth=1, aes(color = factor(lag),xintercept = med_cor_by_lag)) +
+  geom_vline(xintercept = 0, linetype="dashed", linewidth=1, color="gray40")
 # plot_timeCorLag
-ggsave("plots/plot_EDA_timeCorLagDensity.png", 
+ggsave("plots/plot_EDA_timeCorLagDensity.png",
        wrap_plots(plot_timeCorLag), width=6, height=4)
 
 #### SANDBOX ####

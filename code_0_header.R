@@ -22,6 +22,7 @@ library(countrycode)
 library(fixest)
 library(lme4)
 library(broom.mixed)
+library(ggridges)
 # plotting
 theme_set(theme_bw())
 theme_update(text = element_text(size=18))
