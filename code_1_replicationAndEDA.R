@@ -414,6 +414,70 @@ plot_timeCorLag =
 ggsave("plots/plot_EDA_timeCorLagDensity.png",
        wrap_plots(plot_timeCorLag), width=6, height=4)
 
+#### EDA: Mean growth by T bin over time ####
+
+dat_binned <- dat %>%
+  mutate(
+    t_bin = cut(t, breaks = 5, ordered_result = TRUE),
+    tx5d_bin = cut(tx5d, breaks = 5, ordered_result = TRUE)
+  )
+
+plot_growth_by_t_bin <-
+  dat_binned %>%
+  group_by(time, t_bin) %>%
+  summarise(mean_growth = mean(growth, na.rm=TRUE), .groups="drop") %>%
+  ggplot(aes(x = time, y = mean_growth, color = t_bin)) +
+  geom_point(alpha = 0.4, size = 1) +
+  geom_smooth(method = "loess", se = FALSE, linewidth = 0.6) +
+  theme_bw() +
+  labs(x = "Time", y = "Mean Growth", color = "T Bin (C)",
+       title = "Mean Regional Growth over Time by Temperature Bin")
+ggsave("plots/plot_EDA_growthByTBin.png", plot_growth_by_t_bin, width=10, height=5)
+
+#### EDA: Mean growth by tx5d bin over time ####
+
+plot_growth_by_tx5d_bin <-
+  dat_binned %>%
+  group_by(time, tx5d_bin) %>%
+  summarise(mean_growth = mean(growth, na.rm=TRUE), .groups="drop") %>%
+  ggplot(aes(x = time, y = mean_growth, color = tx5d_bin)) +
+  geom_point(alpha = 0.4, size = 1) +
+  geom_smooth(method = "loess", se = FALSE, linewidth = 0.6) +
+  theme_bw() +
+  labs(x = "Time", y = "Mean Growth", color = "Tx5d Bin (C)",
+       title = "Mean Regional Growth over Time by Extreme Heat (Tx5d) Bin")
+ggsave("plots/plot_EDA_growthByTx5dBin.png", plot_growth_by_tx5d_bin, width=10, height=5)
+
+#### EDA: Growth vs T by country, regions as color ####
+
+countries_for_scatter <- c("AUS", "CAN", "KOR", "FRA", "ARG", "CHE", "PAK", "BRA")
+
+plot_growth_vs_t_country <-
+  dat %>%
+  filter(iso %in% countries_for_scatter) %>%
+  ggplot(aes(x = t, y = growth, color = region)) +
+  geom_point(alpha = 0.3, size = 0.8) +
+  geom_smooth(method = "lm", se = FALSE, linewidth = 0.6) +
+  facet_wrap(~ iso, scales = "free") +
+  theme_bw() +
+  guides(color = "none") +
+  labs(x = "T (C)", y = "Growth", title = "Growth vs Temperature by Country (colored by Region)")
+ggsave("plots/plot_EDA_growthVsT_country.png", plot_growth_vs_t_country, width=12, height=8)
+
+#### EDA: Growth vs tx5d by country, regions as color ####
+
+plot_growth_vs_tx5d_country <-
+  dat %>%
+  filter(iso %in% countries_for_scatter) %>%
+  ggplot(aes(x = tx5d, y = growth, color = region)) +
+  geom_point(alpha = 0.3, size = 0.8) +
+  geom_smooth(method = "lm", se = FALSE, linewidth = 0.6) +
+  facet_wrap(~ iso, scales = "free") +
+  theme_bw() +
+  guides(color = "none") +
+  labs(x = "Tx5d", y = "Growth", title = "Growth vs Extreme Heat (tx5d) by Country (colored by Region)")
+ggsave("plots/plot_EDA_growthVsTx5d_country.png", plot_growth_vs_tx5d_country, width=12, height=8)
+
 #### SANDBOX ####
 
 
