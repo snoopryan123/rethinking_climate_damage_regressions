@@ -327,40 +327,6 @@ ggsave("plots/plot_EDA_regionNeighborCorr_tx5d.png", p_tx5d_neighbors, width=14,
 # # plot_continentCorr
 # ggsave("plots/plot_EDA_subcontinentContinentCorr.png", width=11, height=5)
 
-#### EDA: Lag-1 Growth Correlation by Region ####
-
-plot_lag1 <- function(varname, ylab) {
-  dat %>%
-    filter(iso %in% c("DNK", "GRC", "AZE")) %>%
-    arrange(region, time) %>%
-    group_by(region) %>%
-    mutate(var_lag1 = lag(.data[[varname]])) %>%
-    ungroup() %>%
-    ggplot(aes(x = var_lag1, y = .data[[varname]])) +
-    geom_abline(intercept=0, slope=0, color="gray60", linetype="dashed") +
-    geom_abline(intercept=0, slope=1, color="gray60", linetype="dashed") +
-    geom_point(alpha = 0.5) +
-    geom_smooth(aes(color = iso), method = "lm", se = FALSE) +
-    stat_correlation(aes(color = iso), method = "pearson", label.x = "left", label.y = "top") +
-    facet_wrap(~ region, scales="free") +
-    theme_minimal() +
-    labs(
-      x = paste0(ylab, " (Previous Year)"),
-      y = paste0(ylab, " (Current Year)"),
-      title = paste0("Lag-1 ", ylab, " Correlation by Region"),
-      color = "Country"
-    )
-}
-
-plot_timeCorrLag1 = plot_lag1("growth", "Growth")
-ggsave("plots/plot_EDA_timeCorrLag1.png", wrap_plots(plot_timeCorrLag1), width=9, height=7)
-
-plot_timeCorrLag1_t = plot_lag1("t", "T")
-ggsave("plots/plot_EDA_timeCorrLag1_t.png", wrap_plots(plot_timeCorrLag1_t), width=9, height=7)
-
-plot_timeCorrLag1_tx5d = plot_lag1("tx5d", "Tx5d")
-ggsave("plots/plot_EDA_timeCorrLag1_tx5d.png", wrap_plots(plot_timeCorrLag1_tx5d), width=9, height=7)
-
 #### EDA: AR(1) Correlation Ridgeline by Country ####
 
 plot_ar1_ridge <- function(varname, ylab) {
@@ -371,7 +337,7 @@ plot_ar1_ridge <- function(varname, ylab) {
     drop_na(var_lag1) %>%
     group_by(iso, region) %>%
     reframe(ar1 = cor(.data[[varname]], var_lag1)) %>%
-    mutate(iso = fct_reorder(iso, ar1, .fun = median)) %>%
+    mutate(iso = fct_reorder(iso, ar1, .fun = mean)) %>%
     ggplot(aes(x = ar1, y = iso, fill = iso)) +
     geom_density_ridges(alpha = 0.5, scale = 1.2) +
     geom_vline(xintercept = 0, linetype = "dashed", color = "gray40") +
