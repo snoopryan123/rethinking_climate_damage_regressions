@@ -494,6 +494,42 @@ ggsave("plots/plot_EDA_corRidge_growth_tx5d.png", plot_cor_ridge_growth_tx5d, wi
 plot_cor_ridge_t_tx5d = plot_cor_ridge_by_country("t", "tx5d", "T", "Tx5d")
 ggsave("plots/plot_EDA_corRidge_t_tx5d.png", plot_cor_ridge_t_tx5d, width=8, height=10)
 
+#### EDA: Cor(global growth, regional T/tx5d) across regions ####
+
+dat_global_growth <- dat %>%
+  group_by(time) %>%
+  summarise(global_growth = mean(growth, na.rm=TRUE), .groups="drop")
+
+df_cor_global <- bind_rows(
+  dat %>%
+    left_join(dat_global_growth, by = "time") %>%
+    group_by(region, iso) %>%
+    filter(n() >= 25) %>%
+    reframe(r = cor(global_growth, t, use = "complete.obs")) %>%
+    mutate(var = "T"),
+  dat %>%
+    left_join(dat_global_growth, by = "time") %>%
+    group_by(region, iso) %>%
+    filter(n() >= 25) %>%
+    reframe(r = cor(global_growth, tx5d, use = "complete.obs")) %>%
+    mutate(var = "Tx5d")
+)
+
+df_cor_global_means <- df_cor_global %>% group_by(var) %>% summarise(mean_r = mean(r, na.rm=TRUE), .groups="drop")
+
+plot_cor_global_growth_climate <-
+  df_cor_global %>%
+  ggplot(aes(x = r)) +
+  geom_histogram(bins = 30, fill = "steelblue", color = "white") +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "gray40") +
+  geom_vline(data = df_cor_global_means, aes(xintercept = mean_r), color = "red", linewidth = 0.8) +
+  facet_wrap(~ var) +
+  theme_bw() +
+  labs(x = "Cor(Global Growth, Regional Climate Variable)",
+       y = "Number of Regions",
+       title = "Correlation between Global Mean Growth and Regional T / Tx5d")
+ggsave("plots/plot_EDA_corGlobalGrowthClimate.png", plot_cor_global_growth_climate, width=10, height=5)
+
 #### SANDBOX ####
 
 
