@@ -330,16 +330,24 @@ ggsave("plots/plot_EDA_regionNeighborCorr_tx5d.png", p_tx5d_neighbors, width=14,
 #### EDA: AR(1) Correlation Ridgeline by Country ####
 
 plot_ar1_ridge <- function(varname, ylab) {
-  dat %>%
+  df <- dat %>%
     arrange(region, time) %>%
     group_by(region) %>%
     mutate(var_lag1 = lag(.data[[varname]])) %>%
     drop_na(var_lag1) %>%
     group_by(iso, region) %>%
+    filter(n() >= 15) %>%
     reframe(ar1 = cor(.data[[varname]], var_lag1)) %>%
-    mutate(iso = fct_reorder(iso, ar1, .fun = mean)) %>%
-    ggplot(aes(x = ar1, y = iso, fill = iso)) +
-    geom_density_ridges(alpha = 0.5, scale = 1.2) +
+    group_by(iso) %>%
+    filter(n() >= 5) %>%
+    ungroup() %>%
+    mutate(iso = fct_reorder(iso, ar1, .fun = mean))
+  df_means <- df %>% group_by(iso) %>% summarise(mean_ar1 = mean(ar1), .groups = "drop")
+  ggplot(df, aes(x = ar1, y = iso, fill = stat(x))) +
+    geom_density_ridges_gradient(scale = 1.2) +
+    scale_fill_viridis_c(option = "magma") +
+    geom_segment(data = df_means, aes(x = mean_ar1, xend = mean_ar1, y = as.numeric(iso), yend = as.numeric(iso) + 0.9),
+                 inherit.aes = FALSE, color = "gray60", linewidth = 1.25) +
     geom_vline(xintercept = 0, linetype = "dashed", color = "gray40") +
     theme_minimal() +
     theme(panel.background = element_rect(fill = "white", color = NA),
@@ -414,69 +422,77 @@ plot_timeCorLag =
 ggsave("plots/plot_EDA_timeCorLagDensity.png",
        wrap_plots(plot_timeCorLag), width=6, height=4)
 
-#### EDA: Mean growth by T bin over time ####
+#### EDA: Rolling correlation between growth, T, tx5d over time ####
 
-dat_binned <- dat %>%
-  mutate(
-    t_bin = cut(t, breaks = 5, ordered_result = TRUE),
-    tx5d_bin = cut(tx5d, breaks = 5, ordered_result = TRUE)
-  )
+countries_for_plots <- c("AUS", "CAN", "KOR", "FRA", "ARG", "DEU", "PAK", "BRA")
+roll_window <- 5
 
-plot_growth_by_t_bin <-
-  dat_binned %>%
-  group_by(time, t_bin) %>%
-  summarise(mean_growth = mean(growth, na.rm=TRUE), .groups="drop") %>%
-  ggplot(aes(x = time, y = mean_growth, color = t_bin)) +
-  geom_point(alpha = 0.4, size = 1) +
-  geom_smooth(method = "loess", se = FALSE, linewidth = 0.6) +
-  theme_bw() +
-  labs(x = "Time", y = "Mean Growth", color = "T Bin (C)",
-       title = "Mean Regional Growth over Time by Temperature Bin")
-ggsave("plots/plot_EDA_growthByTBin.png", plot_growth_by_t_bin, width=10, height=5)
-
-#### EDA: Mean growth by tx5d bin over time ####
-
-plot_growth_by_tx5d_bin <-
-  dat_binned %>%
-  group_by(time, tx5d_bin) %>%
-  summarise(mean_growth = mean(growth, na.rm=TRUE), .groups="drop") %>%
-  ggplot(aes(x = time, y = mean_growth, color = tx5d_bin)) +
-  geom_point(alpha = 0.4, size = 1) +
-  geom_smooth(method = "loess", se = FALSE, linewidth = 0.6) +
-  theme_bw() +
-  labs(x = "Time", y = "Mean Growth", color = "Tx5d Bin (C)",
-       title = "Mean Regional Growth over Time by Extreme Heat (Tx5d) Bin")
-ggsave("plots/plot_EDA_growthByTx5dBin.png", plot_growth_by_tx5d_bin, width=10, height=5)
-
-#### EDA: Growth vs T by country, regions as color ####
-
-countries_for_scatter <- c("AUS", "CAN", "KOR", "FRA", "ARG", "CHE", "PAK", "BRA")
-
-plot_growth_vs_t_country <-
+plot_rolling_cor <- function(var1, var2, ylab1, ylab2) {
   dat %>%
-  filter(iso %in% countries_for_scatter) %>%
-  ggplot(aes(x = t, y = growth, color = region)) +
-  geom_point(alpha = 0.3, size = 0.8) +
-  geom_smooth(method = "lm", se = FALSE, linewidth = 0.6) +
-  facet_wrap(~ iso, scales = "free") +
-  theme_bw() +
-  guides(color = "none") +
-  labs(x = "T (C)", y = "Growth", title = "Growth vs Temperature by Country (colored by Region)")
-ggsave("plots/plot_EDA_growthVsT_country.png", plot_growth_vs_t_country, width=12, height=8)
+    filter(iso %in% countries_for_plots) %>%
+    arrange(region, time) %>%
+    group_by(region, iso) %>%
+    mutate(roll_cor = zoo::rollapply(
+      cbind(.data[[var1]], .data[[var2]]),
+      width = roll_window, FUN = function(x) cor(x[,1], x[,2]),
+      fill = NA, align = "center", by.column = FALSE
+    )) %>%
+    drop_na(roll_cor) %>%
+    ungroup() %>%
+    ggplot(aes(x = time, y = roll_cor, color = region)) +
+    geom_line(alpha = 0.5) +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "gray40") +
+    facet_wrap(~ iso) +
+    theme_bw() +
+    guides(color = "none") +
+    labs(x = "Time", y = paste0(roll_window, "-Year Rolling Cor"),
+         title = paste0("Rolling Correlation: ", ylab1, " vs ", ylab2, " by Region"))
+}
 
-#### EDA: Growth vs tx5d by country, regions as color ####
+plot_rollcor_growth_t = plot_rolling_cor("growth", "t", "Growth", "T")
+ggsave("plots/plot_EDA_rollCor_growth_t.png", plot_rollcor_growth_t, width=12, height=8)
 
-plot_growth_vs_tx5d_country <-
-  dat %>%
-  filter(iso %in% countries_for_scatter) %>%
-  ggplot(aes(x = tx5d, y = growth, color = region)) +
-  geom_point(alpha = 0.3, size = 0.8) +
-  geom_smooth(method = "lm", se = FALSE, linewidth = 0.6) +
-  facet_wrap(~ iso, scales = "free") +
-  theme_bw() +
-  guides(color = "none") +
-  labs(x = "Tx5d", y = "Growth", title = "Growth vs Extreme Heat (tx5d) by Country (colored by Region)")
-ggsave("plots/plot_EDA_growthVsTx5d_country.png", plot_growth_vs_tx5d_country, width=12, height=8)
+plot_rollcor_growth_tx5d = plot_rolling_cor("growth", "tx5d", "Growth", "Tx5d")
+ggsave("plots/plot_EDA_rollCor_growth_tx5d.png", plot_rollcor_growth_tx5d, width=12, height=8)
+
+plot_rollcor_t_tx5d = plot_rolling_cor("t", "tx5d", "T", "Tx5d")
+ggsave("plots/plot_EDA_rollCor_t_tx5d.png", plot_rollcor_t_tx5d, width=12, height=8)
+
+#### EDA: Distribution of regional correlations by country (ridgeline) ####
+
+plot_cor_ridge_by_country <- function(var1, var2, ylab1, ylab2) {
+  df <- dat %>%
+    group_by(iso, region) %>%
+    filter(n() >= 15) %>%
+    reframe(r = cor(.data[[var1]], .data[[var2]], use = "complete.obs")) %>%
+    group_by(iso) %>%
+    filter(n() >= 5) %>%
+    ungroup() %>%
+    mutate(iso = fct_reorder(iso, r, .fun = mean))
+  df_means <- df %>% group_by(iso) %>% summarise(mean_r = mean(r), .groups = "drop")
+  ggplot(df, aes(x = r, y = iso, fill = stat(x))) +
+    geom_density_ridges_gradient(scale = 1.2) +
+    scale_fill_viridis_c(option = "magma") +
+    geom_segment(data = df_means, aes(x = mean_r, xend = mean_r, y = as.numeric(iso), yend = as.numeric(iso) + 0.9),
+                 inherit.aes = FALSE, color = "gray60", linewidth = 1.25) +
+    geom_vline(xintercept = 0, linetype = "dashed", color = "gray40") +
+    theme_minimal() +
+    theme(panel.background = element_rect(fill = "white", color = NA),
+          plot.background = element_rect(fill = "white", color = NA)) +
+    guides(fill = "none") +
+    labs(x = paste0("Cor(", ylab1, ", ", ylab2, ")"),
+         y = "Country",
+         title = paste0("Regional ", ylab1, "-", ylab2, " Correlation by Country"))
+}
+
+plot_cor_ridge_growth_t = plot_cor_ridge_by_country("growth", "t", "Growth", "T")
+ggsave("plots/plot_EDA_corRidge_growth_t.png", plot_cor_ridge_growth_t, width=8, height=10)
+
+plot_cor_ridge_growth_tx5d = plot_cor_ridge_by_country("growth", "tx5d", "Growth", "Tx5d")
+ggsave("plots/plot_EDA_corRidge_growth_tx5d.png", plot_cor_ridge_growth_tx5d, width=8, height=10)
+
+plot_cor_ridge_t_tx5d = plot_cor_ridge_by_country("t", "tx5d", "T", "Tx5d")
+ggsave("plots/plot_EDA_corRidge_t_tx5d.png", plot_cor_ridge_t_tx5d, width=8, height=10)
 
 #### SANDBOX ####
 
