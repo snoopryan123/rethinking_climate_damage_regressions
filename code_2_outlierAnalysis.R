@@ -1,9 +1,7 @@
 
 source("code_0_header.R")
 
-#####################
-### Leave one country out analysis
-####################
+#### Leave one country out analysis ####
 
 ###
 df_country_loo = tibble()
@@ -51,9 +49,7 @@ plot_country_loo =
 # plot_country_loo
 ggsave("plots/plot_loo_country.png", plot_country_loo, width=8, height=5)
 
-#####################
-### Leave one year out analysis
-####################
+#### Leave one year out analysis ####
 
 ###
 df_year_loo = tibble()
@@ -103,9 +99,7 @@ plot_year_loo =
 # plot_year_loo
 ggsave("plots/plot_loo_year.png", plot_year_loo, width=8, height=5)
 
-################ 
-### Leave one out final effect size changes
-################
+#### Leave one out final effect size changes ####
 
 k = 3
 df_country_loo_1 %>%
@@ -202,9 +196,7 @@ for (j in 1:3) {
   print(scales::percent( (ME_tx5d_t25_withoutOutliers - ME_tx5d_t25_og) / abs(ME_tx5d_t25_og) ))
 }
 
-################ 
-#### Diagnostics & Outliers
-################
+#### Diagnostics & Outliers ####
 
 ## model 1: original
 mdl1A <- 
@@ -288,11 +280,9 @@ mdl1A_removeOutliers <-
 summary(mdl1A_removeOutliers)
 summary(mdl1A)
 
-##################
-### Jackknife influence diagnostics (Reviewer 2, point 3)
+#### Jackknife influence diagnostics (Reviewer 2, point 3) ####
 ###  Reuses df_country_loo, df_year_loo, mdl1A, sd_withinRegionTx5d.
 ###  Three figures, no CSVs.
-##################
 
 ### Full-sample marginal effects from mdl1A
 b <- coef(mdl1A)
@@ -467,4 +457,4 @@ plot_jackknife_year_bars <-
 ggsave("plots/plot_jackknife_year_bars.png", plot_jackknife_year_bars,
        width = 11, height = 7, dpi = 200)
 
-##################
+
