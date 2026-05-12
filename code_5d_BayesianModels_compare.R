@@ -6,12 +6,14 @@ source("code_0_header.R")
 #####################
 
 spec_ids <- c("0_original", "3_tightPrior", "2_indepYearRE")
+# spec_ids <- c("0_original", "3_tightPrior", "2_indepYearRE", "4_lagGrowth")
 # spec_ids <- c("0_original", "3_tightPrior", "2_indepYearRE", "1_noYearEff")
 
 spec_labels <- c(
   "0_original"    = "Original Bayesian Model\n(AR(1) year, prior SD=10)",
   "3_tightPrior"  = "Tight prior (AR(1), prior SD=1)",
-  "2_indepYearRE" = "Independent year RE (no AR)"
+  "2_indepYearRE" = "Independent year RE (no AR)"#,
+  # "4_lagGrowth"   = "Lag growth covariate (no year effect)"
   # "1_noYearEff"   = "No year effect"
 )
 
