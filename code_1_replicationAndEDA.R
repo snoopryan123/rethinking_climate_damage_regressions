@@ -13,6 +13,15 @@ mdl_paper <-
 summary(mdl_paper)
 # getfe(mdl_paper)
 
+## model 2: lag growth instead of year FE
+dat_lag <- dat %>% drop_na(growth_lag1)
+mdl_lagGrowth <-
+  felm(
+    as.formula("growth ~ growth_lag1 + t + t2 + tx5d + tx5d:t + var + var:seas + p | region | 0 | region"),
+    data=dat_lag
+  )
+summary(mdl_lagGrowth)
+
 #### In-sample predictiveness (R^2) with versus without the climate variables ####
 
 ### model with climate variables
@@ -51,17 +60,13 @@ results = tibble(
     "percent difference"
   ),
   val = c(
-    round(r.sq.withClimateVars,4),
-    round(r.sq.paper.woClimateVars,4),
-    scales::percent(r.sq.pd)
+    signif(r.sq.withClimateVars, 5),
+    signif(r.sq.paper.woClimateVars, 5),
+    signif(r.sq.pd, 5)
   )
 )
 results
-
-gt::gtsave(
-  gt::gt(results)
-  , "plots/plot_R^2InSamplePredictiveComparison.png"
-)
+write_csv(results, "plots/R2_InSamplePredictiveComparison.csv")
 
 ### get the change in R squared between including and not including climate variables from FELM
 felm_withClimateVars <- 
@@ -73,6 +78,37 @@ felm_withClimateVars <-
 summary_lm_withClimateVars = summary(lm_withClimateVars)
 summary_lm_withClimateVars$P.r.squared
 summary_lm_withClimateVars$P.adj.r.squared
+
+### lag-growth model: R^2 with vs without climate variables
+lm_lagGrowth_withClimate <-
+  lm(
+    as.formula("growth ~ growth_lag1 + t + t2 + tx5d + tx5d:t + var + var:seas + p + region"),
+    data=dat_lag
+  )
+lm_lagGrowth_woClimate <-
+  lm(
+    as.formula("growth ~ growth_lag1 + region"),
+    data=dat_lag
+  )
+
+r.sq.lagGrowth.withClimate = summary(lm_lagGrowth_withClimate)$r.squared
+r.sq.lagGrowth.woClimate = summary(lm_lagGrowth_woClimate)$r.squared
+r.sq.lagGrowth.pd = (r.sq.lagGrowth.withClimate - r.sq.lagGrowth.woClimate) / r.sq.lagGrowth.woClimate
+
+results_lagGrowth = tibble(
+  desc = c(
+    "R^2 with climate vars (lag growth model)",
+    "R^2 without climate vars (lag growth model)",
+    "percent difference"
+  ),
+  val = c(
+    signif(r.sq.lagGrowth.withClimate, 5),
+    signif(r.sq.lagGrowth.woClimate, 5),
+    signif(r.sq.lagGrowth.pd, 5)
+  )
+)
+results_lagGrowth
+write_csv(results_lagGrowth, "plots/R2_InSamplePredictiveComparison_lagGrowth.csv")
 
 #### Data summary ####
 
@@ -343,7 +379,7 @@ plot_ar1_ridge <- function(varname, ylab) {
     ungroup() %>%
     mutate(iso = fct_reorder(iso, ar1, .fun = mean))
   df_means <- df %>% group_by(iso) %>% summarise(mean_ar1 = mean(ar1), .groups = "drop")
-  ggplot(df, aes(x = ar1, y = iso, fill = stat(x))) +
+  ggplot(df, aes(x = ar1, y = iso, fill = after_stat(x))) +
     geom_density_ridges_gradient(scale = 1.2) +
     scale_fill_viridis_c(option = "magma") +
     geom_segment(data = df_means, aes(x = mean_ar1, xend = mean_ar1, y = as.numeric(iso), yend = as.numeric(iso) + 0.9),
@@ -470,7 +506,7 @@ plot_cor_ridge_by_country <- function(var1, var2, ylab1, ylab2) {
     ungroup() %>%
     mutate(iso = fct_reorder(iso, r, .fun = mean))
   df_means <- df %>% group_by(iso) %>% summarise(mean_r = mean(r), .groups = "drop")
-  ggplot(df, aes(x = r, y = iso, fill = stat(x))) +
+  ggplot(df, aes(x = r, y = iso, fill = after_stat(x))) +
     geom_density_ridges_gradient(scale = 1.2) +
     scale_fill_viridis_c(option = "magma") +
     geom_segment(data = df_means, aes(x = mean_r, xend = mean_r, y = as.numeric(iso), yend = as.numeric(iso) + 0.9),
