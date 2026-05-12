@@ -20,7 +20,8 @@ spec_grid <- tribble(
   "0_original",     1L,             1L,               10,
   # "1_noYearEff",    0L,             0L,               10,
   "2_indepYearRE",  1L,             0L,               10,
-  "3_tightPrior",   1L,             1L,                1
+  "3_tightPrior",   1L,             1L,                1,
+  "4_lagGrowth",    0L,             0L,               10
 )
 spec_grid
 
@@ -53,11 +54,14 @@ if (file.exists(rds_path)) {
 }
 message("fitting spec: ", s$spec)
 
+rem_cols <- c("var", "var_seas", "p")
+if (s$spec == "4_lagGrowth") rem_cols <- c(rem_cols, "growth_lag1")
+
 stan_data <- get_data_list_for_stan(
   dat = dat1,
   train_years = sort(unique(dat1$time)),
   useClimateVars = 1,
-  rem_cols = c("var", "var_seas", "p"),
+  rem_cols = rem_cols,
   useYearEffect      = s$useYearEffect,
   useARYearEffect    = s$useARYearEffect,
   beta_prior_sd_coef = s$beta_prior_sd_coef
