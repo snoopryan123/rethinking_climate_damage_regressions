@@ -123,14 +123,53 @@ results_crossModel = tibble(
   val = c(
     signif(r.sq.withClimateVars, 5),
     signif(r.sq.lagGrowth.withClimate, 5),
-    signif((r.sq.lagGrowth.withClimate - r.sq.withClimateVars) / r.sq.withClimateVars, 5),
+    signif((r.sq.lagGrowth.withClimate - r.sq.withClimateVars) / r.sq.withClimateVar * 100, 5),
     signif(r.sq.paper.woClimateVars, 5),
     signif(r.sq.lagGrowth.woClimate, 5),
-    signif((r.sq.lagGrowth.woClimate - r.sq.paper.woClimateVars) / r.sq.paper.woClimateVars, 5)
+    signif((r.sq.lagGrowth.woClimate - r.sq.paper.woClimateVars) / r.sq.paper.woClimateVars * 100, 5)
   )
 )
 results_crossModel
 write_csv(results_crossModel, "plots/R2_crossModelComparison.csv")
+
+### R^2 after removing outliers (1998, 2009, MNG, KEN)
+dat_ro <- dat %>% filter(!(time %in% c(1998, 2009)), !(iso %in% c("MNG", "KEN")))
+dat_lag_ro <- dat_ro %>% drop_na(growth_lag1)
+
+# C&M model without outliers
+lm_ro_with <- lm(growth ~ t + t2 + tx5d + tx5d:t + var + var:seas + p + region + time, data = dat_ro)
+lm_ro_wo   <- lm(growth ~ 1 + region + time, data = dat_ro)
+r2_ro_with <- summary(lm_ro_with)$r.squared
+r2_ro_wo   <- summary(lm_ro_wo)$r.squared
+r2_ro_pd   <- (r2_ro_with - r2_ro_wo) / r2_ro_wo * 100
+
+# lag growth model without outliers
+lm_ro_lag_with <- lm(growth ~ growth_lag1 + t + t2 + tx5d + tx5d:t + var + var:seas + p + region, data = dat_lag_ro)
+lm_ro_lag_wo   <- lm(growth ~ growth_lag1 + region, data = dat_lag_ro)
+r2_ro_lag_with <- summary(lm_ro_lag_with)$r.squared
+r2_ro_lag_wo   <- summary(lm_ro_lag_wo)$r.squared
+r2_ro_lag_pd   <- (r2_ro_lag_with - r2_ro_lag_wo) / r2_ro_lag_wo * 100
+
+results_removeOutliers = tibble(
+  desc = c(
+    "R^2 with climate vars (C&M model, no outliers)",
+    "R^2 without climate vars (C&M model, no outliers)",
+    "pct diff (C&M model, no outliers)",
+    "R^2 with climate vars (lag growth, no outliers)",
+    "R^2 without climate vars (lag growth, no outliers)",
+    "pct diff (lag growth, no outliers)"
+  ),
+  val = c(
+    signif(r2_ro_with, 5),
+    signif(r2_ro_wo, 5),
+    signif(r2_ro_pd, 5),
+    signif(r2_ro_lag_with, 5),
+    signif(r2_ro_lag_wo, 5),
+    signif(r2_ro_lag_pd, 5)
+  )
+)
+results_removeOutliers
+write_csv(results_removeOutliers, "plots/R2_removeOutliers.csv")
 
 #### Data summary ####
 
