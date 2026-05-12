@@ -457,4 +457,110 @@ plot_jackknife_year_bars <-
 ggsave("plots/plot_jackknife_year_bars.png", plot_jackknife_year_bars,
        width = 11, height = 7, dpi = 200)
 
+#### Jackknife plots in Z-score units of C&M analytic SE ####
+
+df_se_analytic <- tibble(
+  qoi = factor(c("ME(t=5)", "ME(t=25)"), levels = c("ME(t=5)", "ME(t=25)")),
+  SE_analytic = c(se_ME(5), se_ME(25))
+)
+
+df_country_z <- df_country %>%
+  left_join(df_se_analytic, by = "qoi") %>%
+  mutate(dQ_z = (Q_loo - Q_full) / SE_analytic)
+
+df_year_z <- df_year %>%
+  left_join(df_se_analytic, by = "qoi") %>%
+  mutate(dQ_z = (Q_loo - Q_full) / SE_analytic)
+
+### Figure 1z: Country rank dot plot (Z-scores)
+plot_jackknife_country_z <-
+  df_country_z %>%
+  group_by(qoi) %>% mutate(rk = rank(dQ_z, ties.method = "first")) %>% ungroup() %>%
+  ggplot(aes(dQ_z, rk, color = flag)) +
+  geom_vline(xintercept = 0, color = "blue") +
+  geom_vline(xintercept = c(-1, 1), color = "gray60", linetype = "dashed") +
+  geom_vline(xintercept = c(-2, 2), color = "gray60", linetype = "dotted") +
+  geom_point(size = 1.2) +
+  geom_text(aes(label = ifelse(flag, as.character(unit), NA)),
+            hjust = -0.2, size = 3, color = "red", na.rm = TRUE) +
+  scale_color_manual(values = c(`TRUE` = "red", `FALSE` = "gray40"), guide = "none") +
+  facet_wrap(~ qoi, scales = "free_x") +
+  labs(
+    x = "Shift in ME (Z-scores of C&M analytic SE)",
+    y = paste0("Country (rank, 1..", n_c, ")"),
+    title = "Country jackknife: LOO shift in Z-scores of original SE",
+    subtitle = sprintf("Blue: full-sample estimate. Dashed: ±1 SE. Dotted: ±2 SE. Red: |DFBETAS| > 2/√%d.", n_c)
+  ) +
+  theme(plot.title = element_text(size = 13),
+        plot.subtitle = element_text(size = 10, color = "gray30"))
+ggsave("plots/plot_jackknife_country_z.png", plot_jackknife_country_z,
+       width = 11, height = 7, dpi = 200)
+
+### Figure 2z: Year rank dot plot (Z-scores)
+df_year_z_total <- df_year_z %>%
+  group_by(unit) %>%
+  summarise(total_abs_dQ_z = sum(abs(dQ_z)), .groups = "drop")
+plot_jackknife_year_z <-
+  df_year_z %>%
+  left_join(df_year_z_total, by = "unit") %>%
+  ggplot(aes(dQ_z, reorder(factor(unit), total_abs_dQ_z), color = flag)) +
+  geom_vline(xintercept = 0, color = "blue") +
+  geom_vline(xintercept = c(-1, 1), color = "gray60", linetype = "dashed") +
+  geom_vline(xintercept = c(-2, 2), color = "gray60", linetype = "dotted") +
+  geom_segment(aes(x = 0, xend = dQ_z,
+                   yend = reorder(factor(unit), total_abs_dQ_z)),
+               color = "gray70", linewidth = 0.3) +
+  geom_point(size = 2.2) +
+  scale_color_manual(values = c(`TRUE` = "red", `FALSE` = "gray25"), guide = "none") +
+  facet_wrap(~ qoi, scales = "free_x") +
+  labs(
+    x = "Shift in ME (Z-scores of C&M analytic SE)",
+    y = "Year removed (sorted by total |Z| across both MEs)",
+    title = "Year jackknife: LOO shift in Z-scores of original SE",
+    subtitle = sprintf("Blue: full-sample. Dashed: ±1 SE. Dotted: ±2 SE. Red: |DFBETAS| > 2/√%d.", n_y)
+  ) +
+  theme(plot.title = element_text(size = 13),
+        plot.subtitle = element_text(size = 10, color = "gray30"))
+ggsave("plots/plot_jackknife_year_z.png", plot_jackknife_year_z,
+       width = 11, height = 8, dpi = 200)
+
+### Figure 4z: Top-20 countries bar plot (Z-scores)
+df_country_z_total <- df_country_z %>%
+  group_by(unit) %>%
+  summarise(total_abs_dQ_z = sum(abs(dQ_z)), .groups = "drop")
+top20_country_z <- df_country_z_total %>%
+  slice_max(total_abs_dQ_z, n = 20, with_ties = FALSE) %>% pull(unit)
+plot_jackknife_country_top20_z <-
+  df_country_z %>%
+  filter(unit %in% top20_country_z) %>%
+  left_join(df_country_z_total, by = "unit") %>%
+  ggplot(aes(reorder(unit, total_abs_dQ_z), dQ_z)) +
+  geom_col() +
+  coord_flip() +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray50") +
+  geom_hline(yintercept = c(-1, 1), linetype = "dashed", color = "gray60") +
+  geom_hline(yintercept = c(-2, 2), linetype = "dotted", color = "gray60") +
+  facet_wrap(~ qoi, scales = "free_x") +
+  labs(x = "Country (sorted by total |Z| across both MEs)",
+       y = "Shift in ME (Z-scores of C&M analytic SE)",
+       title = "Top-20 most influential countries (Z-scores of original SE)")
+ggsave("plots/plot_jackknife_country_top20_z.png", plot_jackknife_country_top20_z,
+       width = 11, height = 6, dpi = 200)
+
+### Figure 5z: All years bar plot (Z-scores)
+plot_jackknife_year_bars_z <-
+  df_year_z %>%
+  ggplot(aes(factor(unit), dQ_z)) +
+  geom_col() +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray50") +
+  geom_hline(yintercept = c(-1, 1), linetype = "dashed", color = "gray60") +
+  geom_hline(yintercept = c(-2, 2), linetype = "dotted", color = "gray60") +
+  facet_wrap(~ qoi, scales = "free_y", ncol = 1) +
+  labs(x = "Year removed",
+       y = "Shift in ME (Z-scores of C&M analytic SE)",
+       title = "Year-level jackknife influence in Z-scores of original SE") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+ggsave("plots/plot_jackknife_year_bars_z.png", plot_jackknife_year_bars_z,
+       width = 11, height = 7, dpi = 200)
+
 
