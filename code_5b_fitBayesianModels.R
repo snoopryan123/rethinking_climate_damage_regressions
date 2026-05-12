@@ -18,7 +18,7 @@ SAVE_VARS  = c("beta_tx5d", "beta_tx5d_t", "phi", "sigma",
 spec_grid <- tribble(
   ~spec,            ~useYearEffect, ~useARYearEffect, ~beta_prior_sd_coef,
   "0_original",     1L,             1L,               10,
-  "1_noYearEff",    0L,             0L,               10,
+  # "1_noYearEff",    0L,             0L,               10,
   "2_indepYearRE",  1L,             0L,               10,
   "3_tightPrior",   1L,             1L,                1
 )
