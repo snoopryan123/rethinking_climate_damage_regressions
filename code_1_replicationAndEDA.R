@@ -55,9 +55,9 @@ scales::percent(r.sq.pd)
 
 results = tibble(
   desc = c(
-    "R^2 with climate vars",
-    "R^2 without climate vars",
-    "percent difference"
+    "R^2 with climate vars (C&M model, year FE)",
+    "R^2 without climate vars (C&M model, year FE)",
+    "percent difference (C&M model, year FE)"
   ),
   val = c(
     signif(r.sq.withClimateVars, 5),
@@ -109,6 +109,28 @@ results_lagGrowth = tibble(
 )
 results_lagGrowth
 write_csv(results_lagGrowth, "plots/R2_InSamplePredictiveComparison_lagGrowth.csv")
+
+### cross-model comparison: lag growth vs year FE
+results_crossModel = tibble(
+  desc = c(
+    "R^2 with climate vars (C&M model, year FE)",
+    "R^2 with climate vars (lag growth model)",
+    "pct diff (lag growth vs year FE, with climate)",
+    "R^2 without climate vars (C&M model, year FE)",
+    "R^2 without climate vars (lag growth model)",
+    "pct diff (lag growth vs year FE, without climate)"
+  ),
+  val = c(
+    signif(r.sq.withClimateVars, 5),
+    signif(r.sq.lagGrowth.withClimate, 5),
+    signif((r.sq.lagGrowth.withClimate - r.sq.withClimateVars) / r.sq.withClimateVars, 5),
+    signif(r.sq.paper.woClimateVars, 5),
+    signif(r.sq.lagGrowth.woClimate, 5),
+    signif((r.sq.lagGrowth.woClimate - r.sq.paper.woClimateVars) / r.sq.paper.woClimateVars, 5)
+  )
+)
+results_crossModel
+write_csv(results_crossModel, "plots/R2_crossModelComparison.csv")
 
 #### Data summary ####
 
