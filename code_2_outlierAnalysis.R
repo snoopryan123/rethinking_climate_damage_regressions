@@ -511,7 +511,7 @@ df_year_z_total <- df_year_z %>%
 plot_jackknife_year_z <-
   df_year_z %>%
   left_join(df_year_z_total, by = "unit") %>%
-  ggplot(aes(dQ_z, reorder(factor(unit), total_abs_dQ_z), color = flag)) +
+  ggplot(aes(dQ_z, reorder(factor(unit), total_abs_dQ_z), color = reverses_sig)) +
   geom_vline(xintercept = 0, color = "blue") +
   geom_vline(xintercept = c(-1, 1), color = "gray60", linetype = "dashed") +
   geom_vline(xintercept = c(-2, 2), color = "gray60", linetype = "dotted") +
@@ -519,13 +519,13 @@ plot_jackknife_year_z <-
                    yend = reorder(factor(unit), total_abs_dQ_z)),
                color = "gray70", linewidth = 0.3) +
   geom_point(size = 2.2) +
-  scale_color_manual(values = c(`TRUE` = "red", `FALSE` = "gray25"), guide = "none") +
+  scale_color_manual(values = c(`TRUE` = "orange", `FALSE` = "gray25"), guide = "none") +
   facet_wrap(~ qoi, scales = "free_x") +
   labs(
     x = "Shift in ME (Z-scores of C&M analytic SE)",
     y = "Year removed (sorted by total |Z| across both MEs)",
     title = "Year jackknife: LOO shift in Z-scores of original SE",
-    subtitle = sprintf("Blue: full-sample. Dashed: ±1 SE. Dotted: ±2 SE. Red: |DFBETAS| > 2/√%d.", n_y)
+    subtitle = "Blue: full-sample. Dashed: ±1 SE. Dotted: ±2 SE. Orange: removal reverses significance."
   ) +
   theme(plot.title = element_text(size = 13),
         plot.subtitle = element_text(size = 10, color = "gray30"))
