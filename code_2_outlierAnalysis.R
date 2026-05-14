@@ -484,20 +484,20 @@ df_year_z <- df_year %>%
 plot_jackknife_country_z <-
   df_country_z %>%
   group_by(qoi) %>% mutate(rk = rank(dQ_z, ties.method = "first")) %>% ungroup() %>%
-  ggplot(aes(dQ_z, rk, color = reverses_sig)) +
+  ggplot(aes(dQ_z, rk, color = flag)) +
   geom_vline(xintercept = 0, color = "blue") +
   geom_vline(xintercept = c(-1, 1), color = "gray60", linetype = "dashed") +
   geom_vline(xintercept = c(-2, 2), color = "gray60", linetype = "dotted") +
   geom_point(size = 1.2) +
-  geom_text(aes(label = ifelse(reverses_sig, as.character(unit), NA)),
-            hjust = -0.2, size = 3, color = "orange", na.rm = TRUE) +
-  scale_color_manual(values = c(`TRUE` = "orange", `FALSE` = "gray40"), guide = "none") +
+  geom_text(aes(label = ifelse(flag, as.character(unit), NA)),
+            hjust = -0.2, size = 3, color = "red", na.rm = TRUE) +
+  scale_color_manual(values = c(`TRUE` = "red", `FALSE` = "gray40"), guide = "none") +
   facet_wrap(~ qoi, scales = "free_x") +
   labs(
     x = "Shift in ME (Z-scores of C&M analytic SE)",
     y = paste0("Country (rank, 1..", n_c, ")"),
     title = "Country jackknife: LOO shift in Z-scores of original SE",
-    subtitle = "Blue: full-sample estimate. Dashed: ±1 SE. Dotted: ±2 SE. Orange: removal reverses significance."
+    subtitle = sprintf("Blue: full-sample. Dashed: ±1 SE. Dotted: ±2 SE. Red: |DFBETAS| > 2/√%d.", n_c)
   ) +
   theme(plot.title = element_text(size = 13),
         plot.subtitle = element_text(size = 10, color = "gray30"))
@@ -511,7 +511,7 @@ df_year_z_total <- df_year_z %>%
 plot_jackknife_year_z <-
   df_year_z %>%
   left_join(df_year_z_total, by = "unit") %>%
-  ggplot(aes(dQ_z, reorder(factor(unit), total_abs_dQ_z), color = reverses_sig)) +
+  ggplot(aes(dQ_z, reorder(factor(unit), total_abs_dQ_z), color = flag)) +
   geom_vline(xintercept = 0, color = "blue") +
   geom_vline(xintercept = c(-1, 1), color = "gray60", linetype = "dashed") +
   geom_vline(xintercept = c(-2, 2), color = "gray60", linetype = "dotted") +
@@ -519,13 +519,13 @@ plot_jackknife_year_z <-
                    yend = reorder(factor(unit), total_abs_dQ_z)),
                color = "gray70", linewidth = 0.3) +
   geom_point(size = 2.2) +
-  scale_color_manual(values = c(`TRUE` = "orange", `FALSE` = "gray25"), guide = "none") +
+  scale_color_manual(values = c(`TRUE` = "red", `FALSE` = "gray25"), guide = "none") +
   facet_wrap(~ qoi, scales = "free_x") +
   labs(
     x = "Shift in ME (Z-scores of C&M analytic SE)",
     y = "Year removed (sorted by total |Z| across both MEs)",
     title = "Year jackknife: LOO shift in Z-scores of original SE",
-    subtitle = "Blue: full-sample. Dashed: ±1 SE. Dotted: ±2 SE. Orange: removal reverses significance."
+    subtitle = sprintf("Blue: full-sample. Dashed: ±1 SE. Dotted: ±2 SE. Red: |DFBETAS| > 2/√%d.", n_y)
   ) +
   theme(plot.title = element_text(size = 13),
         plot.subtitle = element_text(size = 10, color = "gray30"))
@@ -558,19 +558,16 @@ ggsave("plots/plot_jackknife_country_top20_z.png", plot_jackknife_country_top20_
 ### Figure 5z: All years bar plot (Z-scores)
 plot_jackknife_year_bars_z <-
   df_year_z %>%
-  ggplot(aes(factor(unit), dQ_z, fill = reverses_sig)) +
+  ggplot(aes(factor(unit), dQ_z)) +
   geom_col() +
-  scale_fill_manual(values = c(`TRUE` = "orange", `FALSE` = "gray40"), guide = "none") +
   geom_hline(yintercept = 0, linetype = "dashed", color = "gray50") +
   geom_hline(yintercept = c(-1, 1), linetype = "dashed", color = "gray60") +
   geom_hline(yintercept = c(-2, 2), linetype = "dotted", color = "gray60") +
   facet_wrap(~ qoi, scales = "free_y", ncol = 1) +
   labs(x = "Year removed",
        y = "Shift in ME (Z-scores of C&M analytic SE)",
-       title = "Year-level jackknife influence in Z-scores of original SE",
-       subtitle = "Orange: removal reverses significance (LOO CI includes zero).") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1),
-        plot.subtitle = element_text(size = 10, color = "gray30"))
+       title = "Year-level jackknife influence in Z-scores of original SE") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ggsave("plots/plot_jackknife_year_bars_z.png", plot_jackknife_year_bars_z,
        width = 11, height = 7, dpi = 200)
 
