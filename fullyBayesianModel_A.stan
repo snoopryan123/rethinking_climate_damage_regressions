@@ -20,7 +20,9 @@ data {
   vector[n] tx5d_t;
   int<lower=0> k;
   matrix[n, k] remVarsMat;
-  
+  int<lower=0> k_always;              // always-on covariates (not gated by useClimateVars)
+  matrix[n, k_always] alwaysMat;
+
   // variables for testing
   int<lower=0> n_test; // 0 means no test data
   array[n_test] int<lower=1, upper=num_provinces> province_idx_test;
@@ -31,6 +33,7 @@ data {
   vector[n_test] tx5d_test;
   vector[n_test] tx5d_t_test;
   matrix[n_test, k] remVarsMat_test;
+  matrix[n_test, k_always] alwaysMat_test;
 }
 parameters {
   // fixed effects
@@ -40,6 +43,7 @@ parameters {
   real      beta_tx5d;
   real      beta_tx5d_t;
   vector[k] beta_remVars;
+  vector[k_always] beta_alwaysVars;
 
   // Spatial  
   vector[num_countries] z_country; 
@@ -90,7 +94,9 @@ transformed parameters {
           + alpha_province[province_idx]
           + alpha_time[year_idx]
           + useClimateVars * climateLinpred;
-      
+  if (k_always > 0)
+    linpred += alwaysMat * beta_alwaysVars;
+
 }
 model {
   // priors
@@ -107,6 +113,8 @@ model {
   beta_tx5d    ~ normal(0, beta_prior_sd_coef);
   beta_tx5d_t  ~ normal(0, beta_prior_sd_coef);
   beta_remVars ~ normal(0, beta_prior_sd_coef);
+  if (k_always > 0)
+    beta_alwaysVars ~ normal(0, beta_prior_sd_coef);
 
   // spatial & temporal priors
   z_country ~ normal(0,1);
@@ -147,6 +155,8 @@ generated quantities {
             + alpha_province[province_idx_test]
             + timeComponent_test
             + useClimateVars * climateLinpred_test;
+    if (k_always > 0)
+      pred_test += alwaysMat_test * beta_alwaysVars;
     err_test = growth_test - pred_test;
     rmse_test = sqrt( mean( err_test .* err_test ) );
   } else {

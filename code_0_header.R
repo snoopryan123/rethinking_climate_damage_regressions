@@ -254,6 +254,7 @@ dat1
 ### get data for stan
 get_data_list_for_stan <- function(
     dat, train_years, test_year=NA, useClimateVars=1, rem_cols=c("var", "var_seas", "p"),
+    always_cols=c(),
     useYearEffect=1, useARYearEffect=1, beta_prior_sd_coef=10
 ) {
   
@@ -329,7 +330,16 @@ get_data_list_for_stan <- function(
   } else {
     remMat_test = matrix(nrow = 0, ncol = 0)
   }
-  
+
+  # Always-on covariates (not gated by useClimateVars, e.g. growth_lag1)
+  k_always <- length(always_cols)
+  alwaysMat <- if (k_always > 0) as.matrix(dat_train[, always_cols, drop = FALSE]) else matrix(nrow = nrow(dat_train), ncol = 0)
+  if (n_test > 0) {
+    alwaysMat_test <- if (k_always > 0) as.matrix(dat_test[, always_cols, drop = FALSE]) else matrix(nrow = nrow(dat_test), ncol = 0)
+  } else {
+    alwaysMat_test = matrix(nrow = 0, ncol = 0)
+  }
+
   if (n_test > 0) {
     year_idx_test = unique(dat_test$year_idx)
     if (length(unique(dat_test$year_idx)) > 1) {
@@ -363,6 +373,8 @@ get_data_list_for_stan <- function(
     tx5d_t              = as.numeric(dat_train$tx5d_t),
     k                   = k,
     remVarsMat          = remMat,
+    k_always            = k_always,
+    alwaysMat           = alwaysMat,
     ###
     n_test              = n_test,
     province_idx_test   = dat_test$province_idx,
@@ -372,7 +384,8 @@ get_data_list_for_stan <- function(
     t_sq_test           = as.numeric(dat_test$t_sq),
     tx5d_test           = as.numeric(dat_test$tx5d),
     tx5d_t_test         = as.numeric(dat_test$tx5d_t),
-    remVarsMat_test     = remMat_test
+    remVarsMat_test     = remMat_test,
+    alwaysMat_test      = alwaysMat_test
   )
   
   stan_data
