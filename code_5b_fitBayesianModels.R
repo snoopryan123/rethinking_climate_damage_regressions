@@ -55,13 +55,14 @@ if (file.exists(rds_path)) {
 message("fitting spec: ", s$spec)
 
 rem_cols <- c("var", "var_seas", "p")
-if (s$spec == "4_lagGrowth") rem_cols <- c(rem_cols, "growth_lag1")
+always_cols <- if (s$spec == "4_lagGrowth") c("growth_lag1") else c()
 
 stan_data <- get_data_list_for_stan(
   dat = dat1,
   train_years = sort(unique(dat1$time)),
   useClimateVars = 1,
   rem_cols = rem_cols,
+  always_cols = always_cols,
   useYearEffect      = s$useYearEffect,
   useARYearEffect    = s$useARYearEffect,
   beta_prior_sd_coef = s$beta_prior_sd_coef
