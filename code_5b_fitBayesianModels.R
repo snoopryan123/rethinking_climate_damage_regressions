@@ -46,10 +46,11 @@ if (length(args) != 1 || !(args[1] %in% spec_grid$spec)) {
 }
 
 s <- spec_grid[spec_grid$spec == args[1], ]
-rds_path <- paste0("fullyBayesianModel_A_spec_", s$spec, ".rds")
+rds_path  <- paste0("fullyBayesianModel_A_spec_", s$spec, ".rds")
+yrep_path <- paste0("fullyBayesianModel_A_yrep_spec_", s$spec, ".rds")
 
-if (file.exists(rds_path)) {
-  message("skip (cached): ", rds_path)
+if (file.exists(rds_path) && file.exists(yrep_path)) {
+  message("skip (cached): ", rds_path, " and ", yrep_path)
   quit(save = "no")
 }
 message("fitting spec: ", s$spec)
@@ -81,3 +82,11 @@ fit <- fit_stan_model(
 draws_to_save <- posterior::as_draws_df(fit$draws(variables = SAVE_VARS))
 saveRDS(draws_to_save, rds_path)
 message("saved: ", rds_path)
+
+### save y_rep separately for posterior predictive checks
+### thinned to ~250 draws to keep file ~50 MB (gitignored: doesn't match
+### the un-ignore pattern fullyBayesianModel_A_spec_*.rds)
+yrep_mat <- posterior::as_draws_matrix(fit$draws(variables = "y_rep"))
+keep_idx <- round(seq(1, nrow(yrep_mat), length.out = 250))
+saveRDS(yrep_mat[keep_idx, ], yrep_path)
+message("saved: ", yrep_path)

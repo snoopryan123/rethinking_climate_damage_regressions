@@ -127,15 +127,19 @@ model {
 generated quantities {
   real ME_tx5d_t5;
   real ME_tx5d_t25;
+  vector[n] y_rep;
   vector[n_test] climateLinpred_test;
   real timeComponent_test;
   vector[n_test] pred_test;
   vector[n_test] err_test;
   real rmse_test;
-  
+
   // marginal effect of tx5d
   ME_tx5d_t5 = beta_tx5d + beta_tx5d_t*5;
   ME_tx5d_t25 = beta_tx5d + beta_tx5d_t*25;
+
+  // posterior predictive replicates of growth
+  for (i in 1:n) y_rep[i] = normal_rng(linpred[i], sigma);
   
   // test predictions and loss
   if (n_test > 0) {
