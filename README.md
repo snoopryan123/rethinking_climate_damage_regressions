@@ -11,12 +11,18 @@
 
 * Shared data prep and helpers in `code_0_header.R`
 * Replication of the primary regression from Callahan & Mankin (2022), and EDA, in `code_1_replicationAndEDA.R`
-* Bayesian model fitting in `code_5b_BayesianSensitivity.R`
 * Outlier analysis in `code_2_outlierAnalysis.R`
 * Permutation tests in `code_3_permutationTests.R`
 * Out-of-sample cross validation tests in `code_4_outOfSampleCVTests_v0.R`
-* Bayesian model plots (marginal effects, AR coefficient) for the main Bayesian spec in `code_5c_BayesianModel_plots.R`
-* Bayesian model comparison plot in `code_5d_BayesianSensitivity_compare.R`
-* Out-of-sample tests for the Bayesian model in `code_6_BayesianModel_outOfSampleTesting.R`
+* Bayesian model:
+  * Model fitting in `code_5b_fitBayesianModels.R`
+  * Stan model in `fullyBayesianModel_A.stan`
+  * Plots (marginal effects, AR coefficient) for the main Bayesian spec in `code_5c_BayesianModel_plots.R`
+  * Sensitivity comparison plot across model specs in `code_5d_BayesianModels_compare.R`
+  * Posterior predictive checks at the country and region level in `code_5e_BayesianModel_PPC.R`
+* Out-of-sample tests for the Bayesian model:
+  * AR(1) year-effect spec in `code_6a_BayesianModel_outOfSampleTesting_yearEffect.R`
+  * Lag-growth spec in `code_6b_BayesianModel_outOfSampleTesting_lagGrowth.R`
+  * Plots in `code_6c_BayesianModel_outOfSamplePlots.R`
 
 
