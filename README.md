@@ -1,4 +1,4 @@
-# No Detectable Economic Effect of Extreme Heat After Correcting for Dependence
+# Accounting for Spatial and Temporal Dependence Substantially Widens Uncertainty in Estimates of Extreme-Heat Damages
 
 ## Ryan S. Brill and Abraham J. Wyner
 
