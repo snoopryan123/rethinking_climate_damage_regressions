@@ -6,7 +6,7 @@
 *.json 
 *old*
 *OLD*
-
+.claude
 CLAUDE.md
 
 *.rds
