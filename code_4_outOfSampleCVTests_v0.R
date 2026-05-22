@@ -168,25 +168,32 @@ df_losses$model = factor(df_losses$model, levels=formula_tib$label)
 df_losses
 
 plot_cv = 
+
+plot_cv =
   df_losses %>%
   arrange(fold, model) %>%
   group_by(fold) %>%
   mutate(reduction_in_error = -(rmse - first(rmse))/first(rmse) ) %>%
   ungroup() %>%
-  ggplot(aes(y=reduction_in_error, x=model, colour = tag!="")) +
-  geom_hline(yintercept=0, linetype="dashed", color="gray60", linewidth=0.5) +
+  mutate(model = factor(model, levels = rev(formula_tib$label))) %>%
+  ggplot(aes(x=reduction_in_error, y=model, colour = tag!="")) +
+  geom_vline(xintercept=0, linetype="dashed", color="gray60", linewidth=0.5) +
   geom_boxplot() +
   labs(
     title=plot_title,
-    y = "Reduction in Error (RMSE)\n(higher is better)", x = "Model"
+    x = "Reduction in Error (RMSE)  (higher is better)", y = "Model"
   ) +
   scale_colour_manual(
     values = c(`TRUE` = "firebrick", `FALSE` = "black"), guide  = "none"
   ) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  scale_y_continuous(labels = scales::percent) 
+  theme(
+    axis.text.y = element_text(size = 13),
+    axis.title  = element_text(size = 15),
+    plot.title  = element_text(size = 16, hjust = 0.5)
+  ) +
+  scale_x_continuous(labels = scales::percent)
 # plot_cv
-ggsave(plot_name, plot_cv, width=8, height=8)
+ggsave(plot_name, plot_cv, width=11, height=8)
 
 #####################
 ### Wald CIs for New model & Original Model
