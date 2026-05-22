@@ -167,8 +167,6 @@ for (FOLD in FOLDS) {
 df_losses$model = factor(df_losses$model, levels=formula_tib$label)
 df_losses
 
-plot_cv = 
-
 plot_cv =
   df_losses %>%
   arrange(fold, model) %>%
