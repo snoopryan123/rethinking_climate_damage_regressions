@@ -350,12 +350,12 @@ df_coeffs_1 =
   mutate(
     perm_test_lab = 
       case_when(
-        perm_test=="post-selection inference" ~ "Post-selection inference",
-        perm_test=="full (tx5d)" ~ "Full sample\nrandomization of Tx5d",
-        perm_test=="within-year (tx5d)" ~ "Within-year\nrandomization of Tx5d",
-        perm_test=="within-region (tx5d)" ~ "Within-region\nrandomization of Tx5d",
-        perm_test=="ours (tx5d)" ~ "Country–year\nrandomization of Tx5d",
-        perm_test=="ours (t,tx5d)" ~ "Country–year\njoint randomization of (Tx5d,T)",
+        perm_test=="post-selection inference" ~ "Post-selection\ninference",
+        perm_test=="full (tx5d)" ~ "Full\nsample\nrandomization\nof Tx5d",
+        perm_test=="within-year (tx5d)" ~ "Within-year\nrandomization\nof Tx5d",
+        perm_test=="within-region (tx5d)" ~ "Within-region\nrandomization\nof Tx5d",
+        perm_test=="ours (tx5d)" ~ "Country\nyear\nrandomization\nof Tx5d",
+        perm_test=="ours (t,tx5d)" ~ "Country\nyear\njoint\nrandomization\nof (Tx5d,T)",
         TRUE ~ perm_test,
       )
   ) 
@@ -460,7 +460,7 @@ df_plot_permutationMarginalEffects =
     ME_U = quantile(ME, 0.975),
   ) 
 df_plot_permutationMarginalEffects = bind_rows(
-  df_marginalEffectCIs_og %>% mutate(perm_test = "Original model", perm_test_lab = "Original model"),
+  df_marginalEffectCIs_og %>% mutate(perm_test = "Original model", perm_test_lab = "Original\nmodel"),
   df_plot_permutationMarginalEffects
 )
 df_plot_permutationMarginalEffects$perm_test = factor(
@@ -473,21 +473,88 @@ df_plot_permutationMarginalEffects$T = factor(
 )
 df_plot_permutationMarginalEffects
 
-plot_permutationMarginalEffects = 
+plot_permutationMarginalEffects =
   df_plot_permutationMarginalEffects %>%
-  ggplot(aes(x = fct_reorder(perm_test_lab, as.numeric(perm_test)), 
+  ggplot(aes(x = fct_reorder(perm_test_lab, as.numeric(perm_test)),
              ymin = ME_L, y = ME_M, ymax = ME_U, color = T)) +
   geom_hline(yintercept = 0, linetype="dashed", color="gray50") +
   scale_color_manual(values=c("25" = "red", "5" = "blue")) +
-  geom_point(size=3, position=position_dodge(width = 0.1)) + 
-  geom_errorbar(width=0.1, position="dodge") +
-  theme(axis.text.x = element_text(angle = 35, hjust = 1)) +
+  geom_point(size=3, position=position_dodge(width = 0.4)) +
+  geom_errorbar(width=0.25, position=position_dodge(width=0.4)) +
+  theme(
+    axis.text.x = element_text(angle = 0, hjust = 0.5, vjust = 1, size = 16),
+    axis.text.y = element_text(size = 16),
+    axis.title.y = element_text(size = 16),
+    legend.text = element_text(size = 16),
+    legend.title = element_text(size = 16),
+    plot.margin = margin(t=10, r=10, b=20, l=10)
+  ) +
   labs(
     y = "Marginal effect (p.p. per. s.d.)", x=""
-    # x = "Permutation Test"
   )
 # plot_permutationMarginalEffects
-ggsave("plots/plot_permutationTestAMarginalEffects.png",width=9,height=6)
+ggsave("plots/plot_permutationTestAMarginalEffects.png",
+       plot_permutationMarginalEffects, width=14, height=7)
+
+### three-panel split: Original | C&M's permutation tests | ours
+{
+  groupOriginal_perm = c("Original model")
+  groupA_perm        = c("full (tx5d)","within-year (tx5d)","within-region (tx5d)")
+  groupB_perm        = c("ours (tx5d)","ours (t,tx5d)","post-selection inference")
+  shared_ylim_perm = range(
+    c(df_plot_permutationMarginalEffects$ME_L,
+      df_plot_permutationMarginalEffects$ME_U),
+    na.rm = TRUE
+  )
+
+  make_perm_panel = function(df_sub, panel_title, show_y = TRUE) {
+    p <- df_sub %>%
+      ggplot(aes(x = fct_reorder(perm_test_lab, as.numeric(perm_test)),
+                 ymin = ME_L, y = ME_M, ymax = ME_U, color = T)) +
+      geom_hline(yintercept = 0, linetype="dashed", color="gray50") +
+      scale_color_manual(values=c("25" = "red", "5" = "blue")) +
+      geom_point(size=3, position=position_dodge(width = 0.4)) +
+      geom_errorbar(width=0.25, position=position_dodge(width=0.4)) +
+      coord_cartesian(ylim = shared_ylim_perm) +
+      theme(
+        axis.text.x  = element_text(angle = 0, hjust = 0.5, vjust = 1, size = 16),
+        axis.text.y  = element_text(size = 16),
+        axis.title.y = element_text(size = 16),
+        legend.text  = element_text(size = 16),
+        legend.title = element_text(size = 16),
+        plot.title   = element_text(size = 14, hjust = 0.5),
+        plot.margin  = margin(t=10, r=10, b=15, l=10)
+      ) +
+      labs(y = if (show_y) "Marginal effect (p.p. per. s.d.)" else NULL,
+           x = "", title = panel_title)
+    if (!show_y) p <- p + theme(axis.text.y = element_blank(),
+                                axis.ticks.y = element_blank())
+    p
+  }
+
+  panelOriginal = make_perm_panel(
+    df_plot_permutationMarginalEffects %>% filter(perm_test %in% groupOriginal_perm),
+    "C&M's Original Model",
+    show_y = TRUE
+  )
+  panelA = make_perm_panel(
+    df_plot_permutationMarginalEffects %>% filter(perm_test %in% groupA_perm),
+    "C&M's permutation tests",
+    show_y = FALSE
+  )
+  panelB = make_perm_panel(
+    df_plot_permutationMarginalEffects %>% filter(perm_test %in% groupB_perm),
+    "Our dependence-preserving permutation tests",
+    show_y = FALSE
+  )
+
+  plot_permMarginalEffects_split = (panelOriginal + panelA + panelB) +
+    patchwork::plot_layout(guides = "collect", widths = c(1, 3, 3)) &
+    theme(legend.position = "right")
+
+  ggsave("plots/plot_permutationTestAMarginalEffects_split.png",
+         plot_permMarginalEffects_split, width=14, height=7)
+}
 
 ### plot permutation p-value for post-selection inference
 df_plot_permPValForPSI = 
