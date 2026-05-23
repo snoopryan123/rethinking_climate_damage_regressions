@@ -103,7 +103,7 @@ for (v in c(1:length(vars_to_lag))){
 # dataset `dat` for doing regression with extra variables
 panel = panel %>% ungroup()
 panel %>% filter(t!=0) -> dat # when t is exactly 0 it's an error
-dat$growth <- dat$growth*100
+dat <- dat %>% mutate(across(starts_with("growth"), ~ .x * 100))
 # dat$time <- as.factor(as.character(dat$time))
 dat$region_time <- with(dat, interaction(region, time, sep = "_"))
 dat$iso_time <- with(dat, interaction(iso, time, sep = "_"))
