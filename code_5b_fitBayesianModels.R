@@ -79,7 +79,8 @@ fit <- fit_stan_model(
 )
 
 ### save only the quantities we need (much smaller than save_object)
-draws_to_save <- posterior::as_draws_df(fit$draws(variables = SAVE_VARS))
+save_vars <- if (length(always_cols) > 0) c(SAVE_VARS, "beta_alwaysVars") else SAVE_VARS
+draws_to_save <- posterior::as_draws_df(fit$draws(variables = save_vars))
 saveRDS(draws_to_save, rds_path)
 message("saved: ", rds_path)
 
