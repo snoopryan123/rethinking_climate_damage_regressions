@@ -1,4 +1,4 @@
-# Accounting for Spatial and Temporal Dependence Substantially Widens Uncertainty in Estimates of Extreme-Heat Damages
+# Correcting for Spatial and Temporal Dependence in Estimating the Economic Effect of Extreme Heat
 
 ## Ryan S. Brill and Abraham J. Wyner
 
