@@ -42,7 +42,7 @@ CV_TYPE = "IID"
       c("growth ~ 1 | time", "time FE", "", "FE"),
       c("growth ~ 1 + (1 | time)", "time RE", "", "RE"),
       c("growth ~ 1 | region + time", "region/time FEs", "", "FE"),
-      c("growth ~ 1 | region + time", "country/time FEs", "", "FE"),
+      c("growth ~ 1 | country + time", "country/time FEs", "", "FE"),
       c("growth ~ 1 + (1 | time) + (1 | country/region)", "time RE & country/region hierarchical REs", "tag", "RE"),
       # 
       c("growth ~ t + t2 + tx5d + tx5d:t + var + var:seas + p", "climate vars", "tag", "FE"),
