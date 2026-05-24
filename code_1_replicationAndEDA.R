@@ -22,6 +22,24 @@ mdl_lagGrowth <-
   )
 summary(mdl_lagGrowth)
 
+#### Marginal effects of Tx5d (felm-based, standardized to p.p. per s.d.) ####
+### Sanity-check the Bayesian lag-growth posterior against the felm point estimate.
+ME_paper_5  = compute_ME(mdl_paper,     "t", "tx5d", Tstar=5)
+ME_paper_25 = compute_ME(mdl_paper,     "t", "tx5d", Tstar=25)
+ME_lag_5    = compute_ME(mdl_lagGrowth, "t", "tx5d", Tstar=5)
+ME_lag_25   = compute_ME(mdl_lagGrowth, "t", "tx5d", Tstar=25)
+
+results_ME_felm = tibble(
+  model = c("C&M (year FE)", "C&M (year FE)", "lag growth", "lag growth"),
+  T     = c(5, 25, 5, 25),
+  ME    = signif(c(ME_paper_5$estimate, ME_paper_25$estimate, ME_lag_5$estimate, ME_lag_25$estimate), 4),
+  SE    = signif(c(ME_paper_5$se,       ME_paper_25$se,       ME_lag_5$se,       ME_lag_25$se),       4),
+  ci_lo = signif(ME - 1.96*SE, 4),
+  ci_hi = signif(ME + 1.96*SE, 4)
+)
+results_ME_felm
+write_csv(results_ME_felm, "plots/ME_felm_paperVsLagGrowth.csv")
+
 #### In-sample predictiveness (R^2) with versus without the climate variables ####
 
 ### model with climate variables
