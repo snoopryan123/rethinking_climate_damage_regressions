@@ -123,7 +123,7 @@ results_crossModel = tibble(
   val = c(
     signif(r.sq.withClimateVars, 5),
     signif(r.sq.lagGrowth.withClimate, 5),
-    signif((r.sq.lagGrowth.withClimate - r.sq.withClimateVars) / r.sq.withClimateVar * 100, 5),
+    signif((r.sq.lagGrowth.withClimate - r.sq.withClimateVars) / r.sq.withClimateVars * 100, 5),
     signif(r.sq.paper.woClimateVars, 5),
     signif(r.sq.lagGrowth.woClimate, 5),
     signif((r.sq.lagGrowth.woClimate - r.sq.paper.woClimateVars) / r.sq.paper.woClimateVars * 100, 5)
@@ -157,7 +157,9 @@ results_removeOutliers = tibble(
     "pct diff (C&M model, no outliers)",
     "R^2 with climate vars (lag growth, no outliers)",
     "R^2 without climate vars (lag growth, no outliers)",
-    "pct diff (lag growth, no outliers)"
+    "pct diff (lag growth, no outliers)",
+    "pct diff (lag growth vs year FE, with climate, no outliers)",
+    "pct diff (lag growth vs year FE, without climate, no outliers)"
   ),
   val = c(
     signif(r2_ro_with, 5),
@@ -165,7 +167,9 @@ results_removeOutliers = tibble(
     signif(r2_ro_pd, 5),
     signif(r2_ro_lag_with, 5),
     signif(r2_ro_lag_wo, 5),
-    signif(r2_ro_lag_pd, 5)
+    signif(r2_ro_lag_pd, 5),
+    signif((r2_ro_lag_with - r2_ro_with) / r2_ro_with * 100, 5),
+    signif((r2_ro_lag_wo   - r2_ro_wo)   / r2_ro_wo   * 100, 5)
   )
 )
 results_removeOutliers
