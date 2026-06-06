@@ -44,14 +44,16 @@ plot_ME <- function(df, out_path) {
       title = "Posterior mean & 95% credible interval",
       y = "Marginal effect (p.p. per. s.d.)"
     )
-  ggsave(out_path, width = 6, height = 6)
+  ggsave(out_path, width = 6, height = 6, dpi = 300)
+  ggsave(sub("\\.png$", ".jpeg", out_path), width = 6, height = 6, dpi = 300)
 }
 
 plot_phi <- function(draws, out_path) {
   ggplot(draws, aes(x = phi)) +
     geom_histogram(fill = "black") +
     geom_vline(xintercept = 0, linetype = "dashed", color = "gray50")
-  ggsave(out_path, width = 5, height = 4)
+  ggsave(out_path, width = 5, height = 4, dpi = 300)
+  ggsave(sub("\\.png$", ".jpeg", out_path), width = 5, height = 4, dpi = 300)
 }
 
 #####################

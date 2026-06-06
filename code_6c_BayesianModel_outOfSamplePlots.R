@@ -76,7 +76,8 @@ plot_cv_predictNextYear = make_cv_plot(
   "results_bayesianOutOfSampleTest",
   "Rolling out-of-sample predictions of next year"
 )
-ggsave("plots/plot_cv_predictNextYear.png", width=9, height=4)
+ggsave("plots/plot_cv_predictNextYear.png", width=9, height=4, dpi=300)
+ggsave("plots/plot_cv_predictNextYear.jpeg", width=9, height=4, dpi=300)
 
 ### Lag growth model (code_6b)
 plot_cv_predictNextYear_lagGrowth = make_cv_plot(

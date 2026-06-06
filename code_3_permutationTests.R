@@ -553,7 +553,9 @@ ggsave("plots/plot_permutationTestAMarginalEffects.png",
     theme(legend.position = "right")
 
   ggsave("plots/plot_permutationTestAMarginalEffects_split.png",
-         plot_permMarginalEffects_split, width=14, height=7)
+         plot_permMarginalEffects_split, width=14, height=7, dpi=300)
+  ggsave("plots/plot_permutationTestAMarginalEffects_split.jpeg",
+         plot_permMarginalEffects_split, width=14, height=7, dpi=300)
 }
 
 ### plot permutation p-value for post-selection inference

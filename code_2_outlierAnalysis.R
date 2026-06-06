@@ -553,7 +553,9 @@ plot_jackknife_country_top20_z <-
        y = "Shift in ME (Z-scores of C&M analytic SE)",
        title = "Top-20 most influential countries (Z-scores of original SE)")
 ggsave("plots/plot_jackknife_country_top20_z.png", plot_jackknife_country_top20_z,
-       width = 11, height = 6, dpi = 200)
+       width = 11, height = 6, dpi = 300)
+ggsave("plots/plot_jackknife_country_top20_z.jpeg", plot_jackknife_country_top20_z,
+       width = 11, height = 6, dpi = 300)
 
 ### Figure 5z: All years bar plot (Z-scores)
 plot_jackknife_year_bars_z <-
@@ -569,6 +571,8 @@ plot_jackknife_year_bars_z <-
        title = "Year-level jackknife influence in Z-scores of original SE") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ggsave("plots/plot_jackknife_year_bars_z.png", plot_jackknife_year_bars_z,
-       width = 11, height = 7, dpi = 200)
+       width = 11, height = 7, dpi = 300)
+ggsave("plots/plot_jackknife_year_bars_z.jpeg", plot_jackknife_year_bars_z,
+       width = 11, height = 7, dpi = 300)
 
 

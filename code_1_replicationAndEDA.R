@@ -294,7 +294,8 @@ plot_regionCorr <-
 plot_regionCorr = wrap_plots(plot_regionCorr, ncol = 4) +
   plot_annotation(title = "Growth Over Time by Region within each Country")
 # plot_regionCorr
-ggsave("plots/plot_EDA_regionCountryCorr.png", width=12, height=5)
+ggsave("plots/plot_EDA_regionCountryCorr.png", width=12, height=5, dpi=300)
+ggsave("plots/plot_EDA_regionCountryCorr.jpeg", width=12, height=5, dpi=300)
 
 ### plot T over time by region within each country
 plot_regionCorr_t <-
