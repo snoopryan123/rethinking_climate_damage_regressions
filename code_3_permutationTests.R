@@ -650,7 +650,7 @@ plot_permutationCoeffs =
   theme(axis.text.x = element_text(angle = 35, hjust = 1)) +
   labs(x="", y="Coefficient value")
 # plot_permutationCoeffs
-ggsave("plots/plot_permutationTestACoeffs.png",width=15,height=7)
+ggsave("plots/plot_permutationTestACoeffs.png", plot=plot_permutationCoeffs, width=15, height=8.25)
 
 ### plot permutation distribution of the p values
 df_plot_permutationPvals = 
@@ -672,8 +672,7 @@ plot_permutationPvals =
   scale_y_continuous(labels = scales::percent) +
   labs(x="", y="Percentage Of Tests Deemed Significant")
 # plot_permutationPvals
-ggsave("plots/plot_permutationTestAPvals.png",width=15,height=7)
+ggsave("plots/plot_permutationTestAPvals.png", plot=plot_permutationPvals, width=15, height=8.25)
 
 ##################
-
 
