@@ -366,6 +366,8 @@ df_coeffs_1
 temporary = df_coeffs_1 %>% filter(str_detect(coeff,"ME")) %>% 
   filter(str_detect(perm_test,"post-selection")) %>% arrange(coeff)
 
+saveRDS(df_coeffs_1, "results/df_coeffs_1_permutationTests.rds")
+
 ### get original model info
 {
   ### fit the original model
@@ -405,6 +407,8 @@ temporary = df_coeffs_1 %>% filter(str_detect(coeff,"ME")) %>%
   coeffs_og = coeffs_og %>% mutate(coeff = str_replace_all(coeff, "tx5d", "Tx"))
   coeffs_og = coeffs_og %>% mutate(coeff = str_replace_all(coeff, "\\bt\\b", "T"))
   coeffs_og
+
+  saveRDS(coeffs_og, "results/coeffs_og_permutationTests.rds")
   
   ###
   df_marginalEffectCIs_og =
