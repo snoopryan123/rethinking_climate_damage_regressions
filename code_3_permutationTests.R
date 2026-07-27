@@ -351,11 +351,12 @@ df_coeffs_1 =
     perm_test_lab = 
       case_when(
         perm_test=="post-selection inference" ~ "Post-selection\ninference",
-        perm_test=="full (tx5d)" ~ "Full\nsample\nrandomization\nof Tx5d",
-        perm_test=="within-year (tx5d)" ~ "Within-year\nrandomization\nof Tx5d",
-        perm_test=="within-region (tx5d)" ~ "Within-region\nrandomization\nof Tx5d",
-        perm_test=="ours (tx5d)" ~ "Country\nyear\nrandomization\nof Tx5d",
-        perm_test=="ours (t,tx5d)" ~ "Country\nyear\njoint\nrandomization\nof (Tx5d,T)",
+        perm_test=="full (tx5d)" ~ "Full sample\nTx5d",
+        perm_test=="within-year (tx5d)" ~ "Within-year\nTx5d",
+        perm_test=="within-region (tx5d)" ~ "Within-region\nTx5d",
+        perm_test=="ours (tx5d)" ~ "Country-year\nTx5d",
+        perm_test=="ours (t,tx5d)" ~ "Country-year\n(Tx5d,T)",
+        perm_test=="post-selection inference" ~ "Post-selection\ninference",
         TRUE ~ perm_test,
       )
   ) 
@@ -647,10 +648,14 @@ plot_permutationCoeffs =
   geom_hline(yintercept = 0, linetype="dashed", color="gray50") +
   geom_point(size=3) + 
   geom_errorbar(width=0.1, position="dodge") +
-  theme(axis.text.x = element_text(angle = 35, hjust = 1)) +
+  theme(
+    axis.text.x = element_text(angle = 40, hjust = 1, vjust = 1, size = 14),
+    panel.spacing.y = unit(2.5, "lines"),
+    plot.margin = margin(t = 5.5, r = 5.5, b = 16, l = 5.5)
+  ) +
   labs(x="", y="Coefficient value")
 # plot_permutationCoeffs
-ggsave("plots/plot_permutationTestACoeffs.png", plot=plot_permutationCoeffs, width=15, height=8.25)
+ggsave("plots/plot_permutationTestACoeffs.png", plot=plot_permutationCoeffs, width=15, height=8.75)
 
 ### plot permutation distribution of the p values
 df_plot_permutationPvals = 
@@ -667,12 +672,15 @@ plot_permutationPvals =
   filter(!str_detect(coeff, "ME")) %>%
   ggplot(aes(x = fct_reorder(perm_test_lab, as.numeric(perm_test)), y=prop_sig)) +
   facet_wrap(~coeff) +
-  theme(axis.text.x = element_text(angle = 30, hjust = 1)) +
+  theme(
+    axis.text.x = element_text(angle = 40, hjust = 1, vjust = 1, size = 14),
+    panel.spacing.y = unit(2.5, "lines"),
+    plot.margin = margin(t = 5.5, r = 5.5, b = 16, l = 5.5)
+  ) +
   geom_col() +
   scale_y_continuous(labels = scales::percent) +
   labs(x="", y="Percentage Of Tests Deemed Significant")
 # plot_permutationPvals
-ggsave("plots/plot_permutationTestAPvals.png", plot=plot_permutationPvals, width=15, height=8.25)
+ggsave("plots/plot_permutationTestAPvals.png", plot=plot_permutationPvals, width=15, height=8.75)
 
 ##################
-
