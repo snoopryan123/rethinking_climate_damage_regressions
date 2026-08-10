@@ -2,6 +2,8 @@
 
 ## Ryan S. Brill and Abraham J. Wyner
 
+`10.5281/zenodo.21866517`
+
 ### Dataset
 
 * The dataset is `data_extremes_growth_panel_monthedd_1979-2016.csv`
